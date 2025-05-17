@@ -31,8 +31,8 @@ sap.ui.define([
                 case "catalogs":
                     oRouter.navTo("RouteCatalogs");
                     break;
-                case "invertions":
-                    oRouter.navTo("RouteInvertionsCompanies");
+                case "investments":
+                    oRouter.navTo("RouteInvestments");
                     break;
                 default:
                     oRouter.navTo("RouteMain");

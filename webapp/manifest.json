@@ -47,8 +47,11 @@
                 "sap.ui.core": {},
                 "sap.tnt": {},
                 "sap.f": {},
-                "sap.ui.table": {}
-
+                "sap.ui.table": {},
+                "sap.ui.layout": {},
+                "sap.viz": {},
+                "sap.ui.comp": {},
+                "sap.suite.ui.microchart": {}
             }
         },
         "contentDensities": {
@@ -56,6 +59,9 @@
             "cozy": true
         },
         "models": {
+             "": { 
+                "type": "sap.ui.model.json.JSONModel"
+            },
             "i18n": {
                 "type": "sap.ui.model.resource.ResourceModel",
                 "settings": {
@@ -120,16 +126,11 @@
                     "name": "RouteCatalogs",
                     "target": "TargetCatalogs"
                   },
-                {
-                    "pattern": "invertions",
-                    "name": "RouteInvertionsCompanies",
-                    "target": "TargetInvertionsCompanies"
-                },
-                {
-                    "pattern": "invertions/{symbol}",
-                    "name": "RouteInvertions",
-                    "target": "TargetInvertions"
-                }
+                  {
+                    "pattern": "investments",
+                    "name": "RouteInvestments",
+                    "target": "TargetInvestments"
+                  }
             ],
             "targets": {
                 "TargetMain": {
@@ -173,17 +174,11 @@
                     "viewType": "XML",
                     "viewPath": "com.invertions.sapfiorimodinv.view.catalogs"
                 },
-                "TargetInvertionsCompanies": {
-                    "viewName": "Companies",
-                    "viewId": "companiesPage",
+                "TargetInvestments": {
+                    "viewName": "Investments",
+                    "viewId": "investmentsPage",
                     "viewType": "XML",
-                    "viewPath": "com.invertions.sapfiorimodinv.view.invertions"
-                },
-                "TargetInvertions": {
-                    "viewName": "Invertions",
-                    "viewId": "invertionsPage",
-                    "viewType": "XML",
-                    "viewPath": "com.invertions.sapfiorimodinv.view.invertions"
+                    "viewPath": "com.invertions.sapfiorimodinv.view.investments"
                 }
             }
         },

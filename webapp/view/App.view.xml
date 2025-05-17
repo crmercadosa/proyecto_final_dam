@@ -37,16 +37,12 @@
             text="Home"
             icon="sap-icon://home" />
 
-
            <!-- Módulo de Catalogos-->
           <tnt:NavigationListItem
             id="navItemCatalogs"
             key="catalogs"
             text="Módulo Catálogos"
             icon="sap-icon://folder" />
-
-
-          
 
           <!-- Módulo de Seguridad con subitems -->
           <tnt:NavigationListItem
@@ -71,8 +67,8 @@
 
           <!-- Módulo de Inversiones -->
           <tnt:NavigationListItem
-            id="navIteminvertions"
-            key="invertions"
+            id="navItemInvestments"
+            key="investments"
             text="Módulo de Inversiones"
             icon="sap-icon://business-objects-experience" />
           
