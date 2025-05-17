@@ -1,0 +1,10 @@
+/* Enter your custom styles here */
+.textSuccess {
+  background-color: green !important;
+  font-weight: bold;
+}
+
+.textError {
+  background-color: red !important;
+  font-weight: bold;
+}

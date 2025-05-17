@@ -1,0 +1,38 @@
+<mvc:View
+    controllerName="com.invertions.sapfiorimodinv.controller.security.UsersList"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:m="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:layout="sap.ui.layout.form"
+>
+    <m:Page
+        id="UsersListPage"
+        title="Usuarios Registrados"
+        class="sapUiContentPadding"
+    >
+        <!-- Barra de herramientas con botón para Agregar usuario -->
+        <m:Toolbar>
+            <m:Title text="Gestión de Usuarios" />
+            <m:ToolbarSpacer />
+            <m:Button
+                text="Agregar Usuario"
+                icon="sap-icon://add"
+                press=".onAddUser"
+            />
+        </m:Toolbar>
+        <m:List
+            id="UsersList"
+            headerText="Lista de usuarios"
+            items="{users>/value}"
+            mode="SingleSelectMaster"
+            itemPress=".onListItemPressed"
+        >
+            <m:StandardListItem
+                title="{users>USERNAME}"
+                description="{users>DEPARTMENT}"
+                type="Active"
+            />
+        </m:List>
+
+    </m:Page>
+</mvc:View>
