@@ -130,7 +130,12 @@
                     "pattern": "investments",
                     "name": "RouteInvestments",
                     "target": "TargetInvestments"
-                  }
+                  },
+                {
+                    "pattern": "login",
+                    "name": "RouteLogin",
+                    "target": "TargetLogin" 
+                }
             ],
             "targets": {
                 "TargetMain": {
@@ -179,6 +184,12 @@
                     "viewId": "investmentsPage",
                     "viewType": "XML",
                     "viewPath": "com.invertions.sapfiorimodinv.view.investments"
+                },
+                "TargetLogin": {
+                    "viewName": "Login",
+                    "viewId": "login",
+                    "viewType": "XML",
+                    "viewPath": "com.invertions.sapfiorimodinv.view.security"
                 }
             }
         },
