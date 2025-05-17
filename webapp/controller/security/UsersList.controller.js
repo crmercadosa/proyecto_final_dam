@@ -1,3 +1,4 @@
+/* eslint-disable valid-jsdoc */
 /* eslint-disable linebreak-style */
 /* eslint-disable no-console */
 /* eslint-disable fiori-custom/sap-no-hardcoded-url */
@@ -7,152 +8,345 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/base/Log",
     "sap/ui/core/Fragment",
-    "sap/m/MessageToast"
-], function(BaseController,JSONModel,Log,Fragment,MessageToast){
+    "sap/m/MessageToast",
+    "sap/m/MessageBox"
+], function(BaseController,JSONModel,Log,Fragment,MessageToast,MessageBox){
     "use strict";
 
     return BaseController.extend("com.invertions.sapfiorimodinv.controller.security.UsersList",{
         onInit: function(){
-            const oRolesModel = new JSONModel();
-            this.getView().setModel(oRolesModel, "users");
 
-            const oSelectedUserModel = new JSONModel();
+            // Esto desactiva los botones cuando entras a la vista, hasta que selecciones un usuario en la tabla se activan
+            var oViewModel = new JSONModel({
+                buttonsEnabled: false
+            });
+            this.getView().setModel(oViewModel, "viewModel");
+            //
 
-            this.getView().setModel(oSelectedUserModel, "selectedUser");
-
-            this._loadUsersData();
+            // Carga los usuarios
+            this.loadUsers();
         },
 
-        _loadUsersData: async function(){
-            try {
-                const response = await fetch("http://localhost:4004/api/sec/usersCRUD?procedure=getall");
-                const data = await response.json();
-                //console.log("ESTO ES LA RESPUESTA:",data);
-                // Guardamos todo el array de usuarios
-                this.getView().getModel("users").setData({ value: data.value });
-              } catch (error) {
-                Log.error("Error al cargar Usuarios", error);
-              }
+        /**
+         * Funcion para cargar la lista de usuarios.
+         */
+        loadUsers: function () {
+            var oTable = this.byId("IdTable1UsersManageTable");
+            var oModel = new JSONModel();
+            var that = this;
+
+            // En nuestro proyecto nosotros creamos un archivo llamado en.json para cargar la url de las apis
+            // Cambiar esto segun su backend
+            fetch("env.json")
+                .then(res => res.json())
+                .then(env => fetch(env.API_USERS_URL_BASE + "getallusers"))
+                .then(res => res.json())
+                .then(data => {
+                    data.value.forEach(user => {
+                        user.ROLES = that.formatRoles(user.ROLES);
+                    });
+                    oModel.setData(data);
+                    oTable.setModel(oModel);
+                })
+                .catch(err => {
+                    if(err.message === ("Cannot read properties of undefined (reading 'setModel')")){
+                        return;
+                    }else{
+                        MessageToast.show("Error al cargar usuarios: " + err.message);
+                    }      
+                });        
         },
-        
-        onListItemPressed:function(oEvent){
-            const oListItem = oEvent.getParameter("listItem");
-            const oContext = oListItem.getBindingContext("users");
-            
-            if (!oContext) {
-                console.error("No se encontró el contexto del rol seleccionado.");
+
+        loadCompanies: function() {
+            //Agregar lógica para cargar compañias
+        },
+
+        loadDeptos: function(){
+            //Agregar lógica para cargar deptos según la compañía
+        },
+
+
+        /**
+         * Funcion para cargar la lista de roles y poderlos visualizar en el combobox
+         * Esto va cambiar ya que quiere que primero carguemos las compañías, luego que carguemos los deptos
+         * Y en base a las compañías y depto que coloquemos, se muestren los roles que pertenecen a esta compañía y depto.
+         */
+        loadRoles: function () {
+            var oView = this.getView();
+            var oRolesModel = new JSONModel();
+
+            // En nuestro proyecto nosotros creamos un archivo llamado en.json para cargar la url de las apis
+            // Cambiar esto segun su backend
+            fetch("env.json")
+                .then(res => res.json())
+                .then(env => fetch(env.API_ROLES_URL_BASE + "getallroles"))
+                .then(res => res.json())
+                .then(data => {
+                    oRolesModel.setData({ roles: data.value });
+                    oView.setModel(oRolesModel);
+                })
+                .catch(err => MessageToast.show("Error al cargar roles: " + err.message));        
+        },
+
+
+        /**
+         * Esto es para formatear los roles al cargarlos de la bd y que aparezcan separados por un guion medio en la tabla.
+         * Ejemplo: Usuario auxiliar-Investor-etc...
+         */
+        formatRoles: function (rolesArray) {
+            return Array.isArray(rolesArray) 
+                ? rolesArray.map(role => role.ROLENAME).join("-") 
+                : "";
+        },
+
+        /**
+         * Este evento se encarga de crear los items en el VBox con el nombre de los roles que se vayan agregando.
+         */
+        onRoleSelected: function (oEvent) {
+            var oComboBox = oEvent.getSource();
+            var sSelectedKey = oComboBox.getSelectedKey();
+            var sSelectedText = oComboBox.getSelectedItem().getText();
+
+            var oVBox;
+            // Este if valida si es la modal de add user o edit user en la que se estáran colocando los roles
+            if (oComboBox.getId().includes("comboBoxEditRoles")) {
+                oVBox = this.getView().byId("selectedEditRolesVBox");  // Update User VBox
+            } else {
+                oVBox = this.getView().byId("selectedRolesVBox");   // Create User VBox
+            }
+            // Validar duplicados
+            var bExists = oVBox.getItems().some(oItem => oItem.data("roleId") === sSelectedKey);
+            if (bExists) {
+                MessageToast.show("El rol ya ha sido añadido.");
                 return;
             }
 
-            const oSelectedUser = oContext.getObject();
-            
-            const oSelectedUserModel = new JSONModel(oSelectedUser);
-            this.getOwnerComponent().setModel(oSelectedUserModel, "selectedUser");
-            
-            //✅ Navegar al detalle
-            this.getOwnerComponent().getRouter().navTo("RouteUserDetails", {
-                USERID: encodeURIComponent(oSelectedUser.USERID)
+            // Crear item visual del rol seleccionado
+            var oHBox = new sap.m.HBox({
+                items: [
+                    new sap.m.Label({ text: sSelectedText }).addStyleClass("sapUiSmallMarginEnd"),
+                    // @ts-ignore
+                    new sap.m.Button({
+                        icon: "sap-icon://decline",
+                        type: "Transparent",
+                        press: () => oVBox.removeItem(oHBox)
+                    })
+                ]
             });
+
+            oHBox.data("roleId", sSelectedKey);
+            oVBox.addItem(oHBox);
         },
 
+        //===================================================
+        //=============== AÑADIR USUARIO ====================
+        //===================================================
+
+        /**
+         * Función onpress del botón para agregar un nuevo usuario
+         */
         onAddUser : function() {
-            if (!this._oUserDialog) {
+            var oView = this.getView();
+
+            if (!this._oCreateUserDialog) {
                 Fragment.load({
-                    id: this.getView().getId(),
-                    name: "com.invertions.sapfiorimodinv.view.Users.UserDialog",
+                    id: oView.getId(),
+                    name: "com.invertions.sapfiorimodinv.view.security.fragments.AddUserDialog",
                     controller: this
-                }).then( (oDialog) => {
-                    this.getView().addDependent(oDialog);
-                    this._oUserDialog = oDialog;
-                    // Crea y asigna un modelo local para el diálogo
-                    var oDialogModel = new JSONModel({
-                        FIRSTNAME: "",
-                        LASTNAME: "",
-                        ALIAS: "",
-                        EMAIL: "",
-                        BIRTHDAYDATE: "",
-                        DEPARTMENT: "",
-                        FUNCTION: "",
-                        STREET: "",
-                        CITY: "",
-                        STATE: "",
-                        POSTALCODE: "",
-                        PHONENUMBER: "",
-                        COUNTRY: "",
-                        ROLES: ""
-                    });
-                    oDialogModel.setDefaultBindingMode(sap.ui.model.BindingMode.TwoWay);
-                    oDialog.setModel(oDialogModel, "UserDialogModel");
-                    oDialog.open();
+                }).then(oDialog => {
+                    this._oCreateUserDialog = oDialog;
+                    oView.addDependent(oDialog);
+                    this.loadRoles();
+                    this._oCreateUserDialog.open();
                 });
             } else {
-                // Si el diálogo ya existe, reinicia el modelo
-                var oModel = this._oUserDialog.getModel("UserDialogModel");
-                // oModel.setData({
-                // FIRSTNAME: "",
-                // LASTNAME: "",
-                // ALIAS: "",
-                // EMAIL: "",
-                // BIRTHDAYDATE: "",
-                // DEPARTMENT: "",
-                // FUNCTION: "",
-                // STREET: "",
-                // CITY: "",
-                // STATE: "",
-                // POSTALCODE: "",
-                // PHONENUMBER: "",
-                // COUNTRY: "",
-                // ROLES: ""
-                // });
-                this._oUserDialog.open();
+                this._oCreateUserDialog.open();
             }
+            
+        },
+
+        onSaveUser: function(){
+            //Aquí la lógica para agregar el usuario
         },
 
         onCancelUser: function(){
-            if (this._oUserDialog) {
-                this._oUserDialog.close();
+            if (this._oCreateUserDialog) {
+                this._oCreateUserDialog.close();
             }
         },
-        onSaveUser: function() {
-            var oDialogModel = this._oUserDialog.getModel("UserDialogModel");
-            var oNewUser = oDialogModel.getData();
-            console.log("Datos guardados en el modelo local:",oNewUser);
-            // Validar datos básicos, por ejemplo:
-            if (!oNewUser.FIRSTNAME || !oNewUser.LASTNAME || !oNewUser.EMAIL) {
-                MessageToast.show("Por favor, complete los campos obligatorios.");
+
+        //===================================================
+        //=============== EDITAR USUARIO ====================
+        //===================================================
+
+        /**
+         * Función onpress del botón para editar un nuevo usuario
+         * Agregar la lógica para cargar la info a la modal
+         */
+        onEditUser: function() {
+            var oView = this.getView();
+
+            if (!this._oEditUserDialog) {
+                Fragment.load({
+                    id: oView.getId(),
+                    name: "com.invertions.sapfiorimodinv.view.security.fragments.EditUserDialog",
+                    controller: this
+                }).then(oDialog => {
+                    this._oEditUserDialog = oDialog;
+                    oView.addDependent(oDialog);
+                    this._oEditUserDialog.open();
+                });
+            } else {
+                this._oEditUserDialog.open();
+            }
+            
+        },
+
+        onEditSaveUser: function(){
+            //Aquí la lógica para agregar la info actualizada del usuario en la bd
+        },
+
+        onEditCancelUser: function(){
+            if (this._oEditUserDialog) {
+                this._oEditUserDialog.close();
+            }
+        },
+
+
+        // ===================================================
+        // ========= Eliminar Usuario Fisicamente ============
+        // ===================================================
+
+        /**
+         * Función onDeleteUser .
+         */
+        onDeleteUser: function(){
+            if (this.selectedUser) {
+                var that = this;
+                MessageBox.confirm("¿Deseas eliminar el usuario con nombre: " + this.selectedUser.USERNAME + "?", {
+                    title: "Confirmar eliminación",
+                    icon: MessageBox.Icon.WARNING,
+                    onClose: function (oAction) {
+                        if (oAction === MessageBox.Action.OK) {
+                            that.deleteUser(that.selectedUser.USERID);
+                        }
+                    }
+                });
+            }else{
+                MessageToast.show("Selecciona un usuario para eliminar de la base de datos");
+            }
+        },
+
+        deleteUser: function(UserId){
+            // Aqui agregar la lógica para eliminar de la BD
+        },
+
+        // ===================================================
+        // ============ Desactivar el usuario ================
+        // ===================================================
+
+        /**
+         * Función onDesactivateUser.
+         */
+        onDesactivateUser: function(){
+            if (this.selectedUser) {
+                var that = this;
+                MessageBox.confirm("¿Deseas desactivar el usuario con nombre: " + this.selectedUser.USERNAME + "?", {
+                    title: "Confirmar desactivación",
+                    icon: MessageBox.Icon.WARNING,
+                    onClose: function (oAction) {
+                        if (oAction === MessageBox.Action.OK) {
+                            that.desactivateUser(that.selectedUser.USERID);
+                        }
+                    }
+                });
+            }else{
+                MessageToast.show("Selecciona un usuario para desactivar");
+            }
+        },
+
+        desactivateUser: function(UserId){
+            // Aqui agregar la lógica para desactivar al usuario
+        },
+
+
+        // ===================================================
+        // ============== Activar el usuario =================
+        // ===================================================
+
+        /**
+         * Función onActivateUser.
+         */
+        onActivateUser: function(){
+            if (this.selectedUser) {
+                var that = this;
+                MessageBox.confirm("¿Deseas activar el usuario con nombre: " + this.selectedUser.USERNAME + "?", {
+                    title: "Confirmar activación",
+                    icon: MessageBox.Icon.WARNING,
+                    onClose: function (oAction) {
+                        if (oAction === MessageBox.Action.OK) {
+                            that.activateUser(that.selectedUser.USERID);
+                        }
+                    }
+                });
+            }else{
+                MessageToast.show("Selecciona un usuario para activar");
+            }
+        },
+
+        activateUser: function(UserId){
+            // Aqui agregar la lógica para activar al usuario
+        },
+
+
+        //===================================================
+        //=============== Funciones de la tabla =============
+        //===================================================
+
+        /**
+         * Función que obtiene el usuario que se selecciona en la tabla en this.selectedUser se guarda todo el usuario
+         * Además activa los botones de editar/eliminar/desactivar y activar
+         */
+        onUserRowSelected: function () {
+            var oTable = this.byId("IdTable1UsersManageTable");
+            var iSelectedIndex = oTable.getSelectedIndex();
+
+            if (iSelectedIndex < 0) {
+                this.getView().getModel("viewModel").setProperty("/buttonsEnabled", false);
                 return;
             }
 
-            // Obtener el modelo principal de usuarios (por ejemplo, "users")
-            var oMainModel = this.getView().getModel("users");
-            var aUsers = oMainModel.getProperty("/value") || [];
-            aUsers.push(oNewUser);
-            oMainModel.setProperty("/value", aUsers);
+            var oContext = oTable.getContextByIndex(iSelectedIndex);
+            var UserData = oContext.getObject();
+
+            this.selectedUser = UserData;
+
+            // Activa los botones
+            this.getView().getModel("viewModel").setProperty("/buttonsEnabled", true);
+        },
+
+        onSearchUser: function () {
+            //Aplicar el filtro de búsqueda para la tabla
+        },
+
+        onRefresh: function(){
+            this.loadUsers();
+        },
 
 
-            // Cerramos el diálogo y, opcionalmente, mostramos un mensaje de éxito.
-            this._oUserDialog.close();
-            MessageToast.show("El usuario se ha guardado correctamente.");
+        //===================================================
+        //=========== Validar email y phonenumber ===========
+        //===================================================
+
+        isValidEmail: function(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        },
+
+        isValidPhoneNumber: function(phone) {
+            return /^\d{10}$/.test(phone); // Ejemplo: 10 dígitos numéricos
         }
 
-        ,_resetUserDialog: function() {
-            // Asumiendo que tus controles de entrada están dentro del diálogo
-            // Puedes obtenerlos por ID y poner su valor en vacío.
-            // Por ejemplo:
-            this.byId("inputFirstName").setValue("");
-            this.byId("inputLastName").setValue("");
-            this.byId("inputAlias").setValue("");
-            this.byId("inputEmail").setValue("");
-            this.byId("inputBirthday").setValue("");
-            this.byId("inputDepartment").setValue("");
-            this.byId("inputFunction").setValue("");
-            this.byId("inputStreet").setValue("");
-            this.byId("inputCity").setValue("");
-            this.byId("inputState").setValue("");
-            this.byId("inputPostalCode").setValue("");
-            this.byId("inputPhoneNumber").setValue("");
-            this.byId("inputCountry").setValue("");
-            this.byId("inputRoles").setValue("");
-        }
+
     });
 });

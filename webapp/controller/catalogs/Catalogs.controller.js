@@ -1,3 +1,5 @@
+/* eslint-disable fiori-custom/sap-no-hardcoded-url */
+/* eslint-disable no-console */
 sap.ui.define(
   [
     "sap/ui/core/mvc/Controller",
@@ -112,6 +114,7 @@ sap.ui.define(
             }).then(
               function (oDialog) {
                 this._oAddDialog = oDialog;
+                // @ts-ignore
                 this.getView().addDependent(oDialog);
                 oDialog.open();
               }.bind(this)
@@ -159,6 +162,7 @@ sap.ui.define(
             method: "POST",
             contentType: "application/json",
             data: JSON.stringify(payload),
+            // @ts-ignore
             success: function (response) {
               MessageToast.show("Catálogo agregado correctamente");
               this._oAddDialog.close();
@@ -203,6 +207,7 @@ sap.ui.define(
             }).then(
               function (oDialog) {
                 this._oEditDialog = oDialog;
+                // @ts-ignore
                 this.getView().addDependent(oDialog);
                 oDialog.open();
               }.bind(this)
@@ -228,6 +233,7 @@ sap.ui.define(
             data: JSON.stringify({
               values: oEditedData,
             }),
+            // @ts-ignore
             success: function (response) {
               MessageToast.show("Registro actualizado correctamente");
               this._oEditDialog.close();
@@ -380,6 +386,7 @@ sap.ui.define(
 
         _refreshCatalogTable: function () {
           // Implementa la lógica para refrescar los datos de la tabla
+          // @ts-ignore
           var oTable = this.byId("catalogTable");
           var oModel = this.getView().getModel();
 
@@ -451,6 +458,7 @@ sap.ui.define(
 
         // ---------------------------------------------------- PARA BOTONES DE ACCIONES LOGICAS
 
+        // @ts-ignore
         onSelectionChange: function (oEvent) {
           // Obtener el item seleccionado
           var oTable = this.byId("catalogTable");

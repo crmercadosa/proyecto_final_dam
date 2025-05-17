@@ -8,3 +8,11 @@
   background-color: red !important;
   font-weight: bold;
 }
+
+.myBlackButton .sapMBtnInner {
+    color: black !important;
+}
+
+.myBlackButton .sapMBtnIcon {
+    color: black !important;
+}
