@@ -48,10 +48,25 @@
                     <m:Text id="IdTextUserId" text="{USERID}" wrapping="false"/>
                 </tl:template>
             </tl:Column>
+
             <tl:Column id="IdColumnUserName" sortProperty="USERNAME" width="10rem" autoResizable="true" resizable="true">
                 <m:Label id="IdLabelUserName" text="USERNAME" />
                 <tl:template>
                     <m:Text id="IdTextUserName" text="{USERNAME}" wrapping="false"/>
+                </tl:template>
+            </tl:Column>
+
+            <tl:Column id="IdColumnPhoneNumber" sortProperty="PHONENUMBER" width="10rem" autoResizable="true" resizable="true">
+                <m:Label id="IdLabelPhoneNumber" text="PHONENUMBER" />
+                <tl:template>
+                    <m:Text id="IdTextPhoneNumber" text="{PHONENUMBER}" wrapping="false"/>
+                </tl:template>
+            </tl:Column>
+
+            <tl:Column id="IdColumnEmail" sortProperty="EMAIL" width="15rem" autoResizable="true" resizable="true">
+                <m:Label id="IdLabelEmail" text="EMAIL" />
+                <tl:template>
+                    <m:Text id="IdTextEmail" text="{EMAIL}" wrapping="false"/>
                 </tl:template>
             </tl:Column>
 
@@ -69,20 +84,6 @@
                 </tl:template>
             </tl:Column>
 
-            <tl:Column id="IdColumnEmail" sortProperty="EMAIL" width="15rem" autoResizable="true" resizable="true">
-                <m:Label id="IdLabelEmail" text="EMAIL" />
-                <tl:template>
-                    <m:Text id="IdTextEmail" text="{EMAIL}" wrapping="false"/>
-                </tl:template>
-            </tl:Column>
-
-            <tl:Column id="IdColumnPhoneNumber" sortProperty="PHONENUMBER" width="10rem" autoResizable="true" resizable="true">
-                <m:Label id="IdLabelPhoneNumber" text="PHONENUMBER" />
-                <tl:template>
-                    <m:Text id="IdTextPhoneNumber" text="{PHONENUMBER}" wrapping="false"/>
-                </tl:template>
-            </tl:Column>
-
             <tl:Column id="IdColumnDepartment" sortProperty="DEPARTMENT" width="10rem" autoResizable="true" resizable="true">
                 <m:Label id="IdLabelDepartment" text="DEPARTMENT" />
                 <tl:template>
@@ -90,17 +91,17 @@
                 </tl:template>
             </tl:Column>
 
-            <tl:Column id="IdColumnFunction" sortProperty="FUNCTION" width="10rem" autoResizable="true" resizable="true">
-                <m:Label id="IdLabelFunction" text="FUNCTION" />
-                <tl:template>
-                    <m:Text id="IdTextFunction" text="{FUNCTION}" wrapping="false"/>
-                </tl:template>
-            </tl:Column>
-
             <tl:Column id="IdColumnRoles" sortProperty="ROLES" width="12rem" autoResizable="true" resizable="true">
                 <m:Label id="IdLabelRoles" text="ROLES" />
                 <tl:template>
                     <m:Text id="IdTextRoles" text="{path: 'ROLES', formatter: '.formatRoles'}" wrapping="false"/>
+                </tl:template>
+            </tl:Column>
+
+            <tl:Column id="IdColumnFunction" sortProperty="FUNCTION" width="10rem" autoResizable="true" resizable="true">
+                <m:Label id="IdLabelFunction" text="FUNCTION" />
+                <tl:template>
+                    <m:Text id="IdTextFunction" text="{FUNCTION}" wrapping="false"/>
                 </tl:template>
             </tl:Column>
 
@@ -124,9 +125,7 @@
                 </m:SegmentedButton>
             </m:OverflowToolbar>
         </tl:footer>
-
     </tl:Table>
-
         
     </m:Page>
 </mvc:View>
