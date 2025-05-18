@@ -37,8 +37,10 @@
                                                 <Column><Text text="Low"/></Column>
                                                 <Column><Text text="Close"/></Column>
                                                 <Column><Text text="Volume"/></Column>
-                                                <Column><Text text="Short MA"/></Column>
-                                                <Column><Text text="Long MA"/></Column>
+                                                <Column><Text text="Indicators"/></Column>
+                                                <Column><Text text="Signals"/></Column>
+                                                <Column><Text text="Rules"/></Column> <!-- Criterios -->
+                                                <Column><Text text="Shares"/></Column> <!-- Acciones -->
                                             </columns>
                                             <items>
                                                 <ColumnListItem>
@@ -48,8 +50,10 @@
                                                     <Text text="{strategyResultModel>LOW}"/>
                                                     <Text text="{strategyResultModel>CLOSE}"/>
                                                     <Text text="{strategyResultModel>VOLUME}"/>
-                                                    <Text text="{strategyResultModel>SHORT_MA}"/>
-                                                    <Text text="{strategyResultModel>LONG_MA}"/>
+                                                    <Text text="{strategyResultModel>INDICATORS}"/>
+                                                    <Text text="{strategyResultModel>SIGNALS}"/>
+                                                    <Text text="{strategyResultModel>RULES}"/>
+                                                    <Text text="{strategyResultModel>SHARES}"/>
                                                 </ColumnListItem>
                                             </items>
                                         </Table>

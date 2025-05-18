@@ -17,105 +17,99 @@ sap.ui.define([
       _sSidebarOriginalSize: "380px", 
 
       onInit: function() {
-          // 1. Modelo para los símbolos (datos estáticos por ahora)
-          this._initSymbolModel();
-          
-          // 2. Modelo para la tabla (vacío)
-          this.getView().setModel(new JSONModel({
-            value: [] 
-        }), "priceData");
+    // 1. Modelo para los símbolos (datos estáticos por ahora)
+    this._initSymbolModel();
+    
+    // 2. Modelo para la tabla (vacío)
+    this.getView().setModel(new JSONModel({
+        value: [] 
+    }), "priceData");
 
-          // 3. Configurar gráfica
-          this.getView().addEventDelegate({
-            onAfterRendering: this._onViewAfterRendering.bind(this)
-        });
+    // 3. Configurar gráfica
+    this.getView().addEventDelegate({
+        onAfterRendering: this._onViewAfterRendering.bind(this)
+    });
 
-        var oViewModel = new sap.ui.model.json.JSONModel({
-            selectedTab: "table"
-        });
-        this.getView().setModel(oViewModel, "viewModel");
+    var oViewModel = new sap.ui.model.json.JSONModel({
+        selectedTab: "table"
+    });
+    this.getView().setModel(oViewModel, "viewModel");
 
+    // Inicializar el modelo de análisis
+    var oStrategyAnalysisModelData = {
+        balance: 1000,
+        stock: 1,
+        strategyKey: "",
+        longSMA: 200,
+        shortSMA: 50,
+        startDate: null,
+        endDate: null,
+        controlsVisible: false,
+        strategies: [
+            { key: "", text: "Cargando textos..." },
+            { key: "MACrossover", text: "Cargando textos..." }
+        ]
+    };
+    var oStrategyAnalysisModel = new JSONModel(oStrategyAnalysisModelData);
+    this.getView().setModel(oStrategyAnalysisModel, "strategyAnalysisModel");
 
-          // Inicializar el modelo de análisis (tus cambios)
-          var oStrategyAnalysisModelData = {
-              balance: 1000,
-              stock: 1,
-              strategyKey: "",
-              longSMA: 200,
-              shortSMA: 50,
-              startDate: null,
-              endDate: null,
-              controlsVisible: false,
-              strategies: [
-                  { key: "", text: "Cargando textos..." },
-                  { key: "MACrossover", text: "Cargando textos..." }
-              ]
-          };
-          var oStrategyAnalysisModel = new JSONModel(oStrategyAnalysisModelData);
-          this.getView().setModel(oStrategyAnalysisModel, "strategyAnalysisModel");
+    //Inicialización modelo de resultados
+    var oStrategyResultModel = new JSONModel({
+        hasResults: false,
+        idSimulation: null,
+        signal: null,
+        date_from: null,
+        date_to: null,
+        moving_averages: { short: null, long: null },
+        signals: [],
+        chart_data: {},
+        result: null
+    });
+    this.getView().setModel(oStrategyResultModel, "strategyResultModel");
+    
+    this._setDefaultDates();
 
-          //Inicialización modelo de resultados
-          var oStrategyResultModel = new JSONModel({
-              hasResults: false,
-              idSimulation: null,
-              signal: null,
-              date_from: null,
-              date_to: null,
-              moving_averages: { short: null, long: null },
-              signals: [],
-              chart_data: {},
-              result: null
-          });
-          this.getView().setModel(oStrategyResultModel, "strategyResultModel");
-          
-          this._setDefaultDates(); // Tus cambios
+    // Cargar el ResourceBundle
+    var oI18nModel = this.getOwnerComponent().getModel("i18n");
+    if (oI18nModel) {
+        try {
+            var oResourceBundle = oI18nModel.getResourceBundle();
+            if (oResourceBundle && typeof oResourceBundle.getText === 'function') {
+                this._oResourceBundle = oResourceBundle;
+                oStrategyAnalysisModel.setProperty("/strategies", [
+                    { key: "", text: this._oResourceBundle.getText("selectStrategyPlaceholder") },
+                    { key: "MACrossover", text: this._oResourceBundle.getText("movingAverageCrossoverStrategy") }
+                ]);
+                console.log("Textos de i18n cargados correctamente.");
+            } else {
+                throw new Error("ResourceBundle no válido");
+            }
+        } catch (error) {
+            console.error("Error al cargar ResourceBundle:", error);
+            oStrategyAnalysisModel.setProperty("/strategies", [
+                { key: "", text: "Error i18n: Seleccione..." },
+                { key: "MACrossover", text: "Error i18n: Cruce Medias..." }
+            ]);
+        }
+    } else {
+        console.error("Modelo i18n no encontrado. Usando textos por defecto.");
+        oStrategyAnalysisModel.setProperty("/strategies", [
+            { key: "", text: "No i18n: Seleccione..." },
+            { key: "MACrossover", text: "No i18n: Cruce Medias..." }
+        ]);
+    }
 
-          // Cargar el ResourceBundle asíncronamente (tus cambios)
-          var oI18nModel = this.getOwnerComponent().getModel("i18n");
-          if (oI18nModel) {
-              var oResourceBundlePromise = oI18nModel.getResourceBundle();
-              oResourceBundlePromise.then(function(oLoadedBundle) {
-                  console.log("Promesa del ResourceBundle resuelta. Bundle:", oLoadedBundle);
-                  if (oLoadedBundle && typeof oLoadedBundle.getText === 'function') {
-                      this._oResourceBundle = oLoadedBundle;
-                      oStrategyAnalysisModel.setProperty("/strategies", [
-                          { key: "", text: this._oResourceBundle.getText("selectStrategyPlaceholder") },
-                          { key: "MACrossover", text: this._oResourceBundle.getText("movingAverageCrossoverStrategy") }
-                      ]);
-                      console.log("Textos de i18n cargados en el modelo de estrategias.");
-                  } else {
-                      oStrategyAnalysisModel.setProperty("/strategies", [
-                          { key: "", text: "Error i18n: Seleccione..." },
-                          { key: "MACrossover", text: "Error i18n: Cruce Medias..." }
-                      ]);
-                  }
-              }.bind(this)).catch(function(error) {
-                  console.error("Error al resolver la Promesa del ResourceBundle:", error);
-                  oStrategyAnalysisModel.setProperty("/strategies", [
-                      { key: "", text: "Error Promesa i18n: Seleccione..." },
-                      { key: "MACrossover", text: "Error Promesa i18n: Cruce Medias..." }
-                  ]);
-              });
-          } else {
-              console.error("Modelo i18n no encontrado. Usando textos por defecto.");
-              oStrategyAnalysisModel.setProperty("/strategies", [
-                  { key: "", text: "No i18n: Seleccione..." },
-                  { key: "MACrossover", text: "No i18n: Cruce Medias..." }
-              ]);
-          }
-
-          // Para el tamaño del Sidebar (tus cambios)
-          var oSidebarLayoutData = this.byId("sidebarLayoutData");
-          if (oSidebarLayoutData) {
-              this._sSidebarOriginalSize = oSidebarLayoutData.getSize();
-          } else {
-              var oSidebarVBox = this.byId("sidebarVBox");
-              if (oSidebarVBox && oSidebarVBox.getLayoutData()) {
-                  this._sSidebarOriginalSize = oSidebarVBox.getLayoutData().getSize();
-              }
-          }
-      },
-
+    // Para el tamaño del Sidebar
+    var oSidebarLayoutData = this.byId("sidebarLayoutData");
+    if (oSidebarLayoutData) {
+        this._sSidebarOriginalSize = oSidebarLayoutData.getSize();
+    } else {
+        var oSidebarVBox = this.byId("sidebarVBox");
+        if (oSidebarVBox && oSidebarVBox.getLayoutData()) {
+            this._sSidebarOriginalSize = oSidebarVBox.getLayoutData().getSize();
+        }
+    }
+},
       onTabSelect: function(oEvent) {
         var sKey = oEvent.getParameter("key");
         this.getView().getModel("viewModel").setProperty("/selectedTab", sKey);

@@ -30,8 +30,8 @@
                             </VBox>
                         </HBox>
 
-                        <HBox justifyContent="SpaceBetween" width="100%" renderType="Bare" class="sapUiTinyMarginTop">
-                            <VBox width="48%">
+                        <VBox width="100%">
+                            
                                 <Label text="{i18n>startDateLabelText}"/>
                                 <DatePicker id="startDatePickerInFragment"
                                     value="{
@@ -40,8 +40,8 @@
                                     }"
                                     displayFormat="long"
                                     width="100%"/>
-                            </VBox>
-                            <VBox width="48%">
+                        </VBox>
+                        <VBox width="100%">
                                 <Label text="{i18n>endDateLabelText}"/>
                                 <DatePicker id="endDatePickerInFragment"
                                     value="{
@@ -51,7 +51,6 @@
                                     displayFormat="long"
                                     width="100%"/>
                             </VBox>
-                        </HBox>
 
                         <Label class="sapUiTinyMarginTop" text="Cantidad de acciones"/>
                         <StepInput value="{strategyAnalysisModel>/stock}" min="1" step="1" displayValuePrecision="0" placeholder="Ej: 10" width="100%" class=""/>
