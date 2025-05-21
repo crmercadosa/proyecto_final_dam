@@ -1,3 +1,5 @@
+/* eslint-disable comma-dangle */
+/* eslint-disable curly */
 /* eslint-disable fiori-custom/sap-no-hardcoded-url */
 /* eslint-disable no-console */
 sap.ui.define(
@@ -16,25 +18,32 @@ sap.ui.define(
       "com.invertions.sapfiorimodinv.controller.catalogs.Catalogs",
       {
         // ---------------------------------------------------- INICIO DE LA VISTA
-
         onInit: function () {
+          this._oDialog = null;
+          this.loadLabels();
+        },
+
+        loadLabels: function(){
           var oModel = new JSONModel();
           var that = this;
-
-          this._oDialog = null;
-
-          $.ajax({
-            url: "http://localhost:4004/api/sec/getall",
-            method: "GET",
-            success: function (data) {
-              oModel.setData({ value: data.value });
-              that.getView().setModel(oModel);
-            },
-          });
+            fetch("env.json")
+                .then(res => res.json())
+                .then(env => fetch(env.API_LABELS_URL_BASE + "getalllabels"))
+                .then(res => res.json())
+                .then(data => {
+                    oModel.setData({ value: data.value });
+                    that.getView().setModel(oModel);
+                })
+                .catch(err => {
+                    if(err.message === ("Cannot read properties of undefined (reading 'setModel')")){
+                        return;
+                    }else{
+                        MessageToast.show("Error al cargar usuarios: " + err.message);
+                    }      
+                });   
         },
 
         // ---------------------------------------------------- PARA FILTRAR EN LA TABLA
-
         onFilterChange: function (oEvent) {
           var sQuery = oEvent.getSource().getValue();
           var oTable = this.byId("catalogTable");
@@ -400,44 +409,42 @@ sap.ui.define(
         },
 
         // ---------------------------------------------------- PARA CARGAR VALORES EN EL PANEL DERECHO
-
         onItemPress: function (oEvent) {
           var oItem = oEvent.getParameter("listItem");
           var oContext = oItem.getBindingContext();
           var oSelectedData = oContext.getObject(); // Obtiene los datos del ítem seleccionado
-
-          var sLabelID = oSelectedData.LABELID;
-          var sUrl =
-            "http://localhost:4004/api/sec/valuesCRUD?procedure=get&labelID=" +
-            encodeURIComponent(sLabelID);
           var that = this;
+          var sLabelID = oSelectedData.LABELID;
 
-          $.ajax({
-            url: sUrl,
-            method: "GET",
-            dataType: "json",
-            success: function (response) {
-              var oValuesView = that.byId("XMLViewValues");
-              if (oValuesView) {
-                oValuesView.loaded().then(function () {
-                  var oController = oValuesView.getController();
-                  if (oController && oController.loadValues) {
-                    // Pasa los valores y también el ítem seleccionado
-                    oController.loadValues(response.value || []);
+                      fetch("env.json")
+                .then(res => res.json())
+                .then(env => fetch(env.API_VALUES_URL_BASE + "getallvalues?LABELID=" + sLabelID))
+                .then(res => res.json())
+                .then(data => {
+                  var oValuesView = that.byId("XMLViewValues");
+                  if (oValuesView) {
+                    oValuesView.loaded().then(function () {
+                      var oController = oValuesView.getController();
+                      if (oController && oController.loadValues) {
+                        // Pasa los valores y también el ítem seleccionado
+                        oController.loadValues(data.value || []);
 
-                    // Actualiza el selectedValue en el modelo values
-                    oValuesView
-                      .getModel("values")
-                      .setProperty("/selectedValue", oSelectedData);
+                        // Actualiza el selectedValue en el modelo values
+                        oValuesView
+                          .getModel("values")
+                          .setProperty("/selectedValue", oSelectedData);
+                      }
+                    });
                   }
-                });
-              }
-            },
-            error: function () {
-              MessageToast.show("Error al cargar valores");
-            },
-          });
-
+                })
+                .catch(err => {
+                    if(err.message === ("Cannot read properties of undefined (reading 'setModel')")){
+                        return;
+                    }else{
+                        MessageToast.show("Error al cargar usuarios: " + err.message);
+                    }      
+                });   
+                
           // Expandir el panel derecho
           var oSplitter = this.byId("mainSplitter");
           var oDetailPanel = this.byId("detailPanel");

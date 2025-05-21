@@ -11,7 +11,7 @@ sap.ui.define([
     },
 
     onGoToInvertions: function () {
-      this.getOwnerComponent().getRouter().navTo("RouteInvertionsCompanies");
+      this.getOwnerComponent().getRouter().navTo("RouteInvestments");
     },
 
     onGoToRoles: function () {
@@ -21,9 +21,10 @@ sap.ui.define([
     onGoToUsers: function () {
       this.getOwnerComponent().getRouter().navTo("RouteUsersList");
     },
+    
     onGoToCatalogs: function(){
       this.getOwnerComponent().getRouter().navTo("RouteCatalogs");
-    },
+    }
     
 
   });
