@@ -19,17 +19,19 @@
 
             <DatePicker id="inputUserBirthdayDate" placeholder="Fecha de nacimiento"/>
 
-            <ComboBox id="comboBoxCompanies" items="{/companies}" selectionChange="onCompanySelected" placeholder="Compañía">
-                <core:Item id="CompanyItem" key="{COMPANYID}" text="{COMPANYNAMME}" />
-            </ComboBox>
-            
-            <ComboBox id="comboBoxCedis" items="{/cedis}" selectionChange="onCediSelected" placeholder="Departamento">
-                <core:Item id="CediItem" key="{CEDIID}" text="{CEDINAME}" />
+            <ComboBox id="comboBoxCompanies" items="{companiesModel>/companies}" selectionChange="onCompanySelected" placeholder="Compañía">
+                <core:Item key="{companiesModel>VALUEID}" text="{companiesModel>VALUE}" />
             </ComboBox>
 
-            <ComboBox id="comboBoxRoles" items="{/roles}" selectionChange="onRoleSelected" placeholder="Selecciona un Rol">
-                <core:Item id="RoleItem" key="{ROLEID}" text="{ROLENAME}" />
+            
+            <ComboBox id="comboBoxCedis" items="{cedisModel>/cedis}" selectionChange="onCediSelected" placeholder="Departamento">
+                <core:Item key="{cedisModel>VALUEID}" text="{cedisModel>VALUE}" />
             </ComboBox>
+
+            <ComboBox id="comboBoxRoles" items="{rolesModel>/roles}" selectionChange="onRoleSelected" placeholder="Selecciona un Rol">
+                <core:Item key="{rolesModel>ROLEID}" text="{rolesModel>ROLENAME}" />
+            </ComboBox>
+
             
             <VBox id="selectedRolesVBox" class="sapUiSmallMarginTop">
                 <!--VBOx donde va añadiendo los roles -->

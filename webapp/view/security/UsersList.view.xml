@@ -29,7 +29,8 @@
             <m:Button id="RefreshUserTable" press="onRefresh" icon="sap-icon://restart" type="Transparent" tooltip="Refrescar tabla"/>
         </m:Toolbar>
 
-        <tl:Table id="IdTable1UsersManageTable"
+        <tl:Table 
+            id="IdTable1UsersManageTable"
             rows="{/value/0/users}"
             selectionMode="Single"
             alternateRowColors="true"
@@ -42,7 +43,7 @@
             rowMode="{ui>/rowMode}">
 
          <tl:columns>
-            <tl:Column id="IdColumnUserId" sortProperty="USERID" width="5rem" autoResizable="true" resizable="true">
+            <tl:Column id="IdColumnUserId" sortProperty="USERID" width="8rem" autoResizable="true" resizable="true">
                 <m:Label id="IdLabelUserId" text="USERID" />
                 <tl:template>
                     <m:Text id="IdTextUserId" text="{USERID}" wrapping="false"/>
@@ -105,10 +106,10 @@
                 </tl:template>
             </tl:Column>
 
-            <tl:Column id="IdColumnStatus" sortProperty="STATUS" width="12rem" autoResizable="true" resizable="true">
+            <tl:Column id="IdColumnStatus" sortProperty="DETAIL_ROW/ACTIVED" width="5rem" autoResizable="true" resizable="true">
                 <m:Label id="IdLabelStatus" text="STATUS" />
                 <tl:template>
-                    <m:Text id="IdTextStatus" text="{STATUS}"/>
+                    <m:ObjectStatus id="IdTextStatus" text="{= ${DETAIL_ROW/ACTIVED} ? 'Activo' : 'Inactivo' }" state="{= ${DETAIL_ROW/ACTIVED} ? 'Success' : 'Warning' }"/>
                 </tl:template>
             </tl:Column>
 
