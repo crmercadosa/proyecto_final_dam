@@ -189,7 +189,6 @@ sap.ui.define([
          */
         onAddUser : function() {
             var oView = this.getView();
-
             if (!this._oCreateUserDialog) {
                 Fragment.load({
                     id: oView.getId(),

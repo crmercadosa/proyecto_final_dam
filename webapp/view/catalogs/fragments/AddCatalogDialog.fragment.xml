@@ -36,7 +36,7 @@
         <TextArea value="{addCatalogModel>/DESCRIPTION}" rows="3"/>
         
         <Label text="Estado Inicial"/>
-        <Switch state="{addCatalogModel>/DETAIL_ROW/ACTIVED}" customTextOn="ACTIVO" customTextOff="INACTIVO"/>
+          <Switch state="{addCatalogModel>/DETAIL_ROW/ACTIVED}" customTextOn="ACTIVO" customTextOff="INACTIVO"/>
       </form:SimpleForm>
     </content>
     
