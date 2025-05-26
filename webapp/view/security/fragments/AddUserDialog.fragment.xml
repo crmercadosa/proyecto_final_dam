@@ -9,15 +9,71 @@
         resizable="true"
     >
         <VBox id="AddUserDialogVbox" class="sapUiSmallMargin">
-            <Input id="inputUserId" placeholder="ID de Usuario"/>
 
-            <Input id="inputUsername" placeholder="Nombre Completo"/>
+            <Input
+                id="inputUserId"
+                placeholder="ID de Usuario"
+                value="{newUserModel>/USERID}" />
+
+            <!-- Nuevo: Campo PASSWORD -->
+            <Input
+                id="inputUserPassword"
+                placeholder="Contraseña"
+                type="Password"
+                value="{newUserModel>/PASSWORD}" />
             
-            <Input id="inputUserPhoneNumber" placeholder="Número telefónico"/>
+            <!-- Nuevo: Campo ALIAS -->
+            <Input
+                id="inputUserAlias"
+                placeholder="Alias"
+                value="{newUserModel>/ALIAS}" />
 
-            <Input id="inputUserEmail" placeholder="Correo Electrónico"/>
+            <!-- Nuevo: Campos FIRSTNAME y LASTNAME -->
+            <Input
+                id="inputUserFirstName"
+                placeholder="Primer Nombre"
+                value="{newUserModel>/FIRSTNAME}" />
+            <Input
+                id="inputUserLastName"
+                placeholder="Apellido"
+                value="{newUserModel>/LASTNAME}" />
 
-            <DatePicker id="inputUserBirthdayDate" placeholder="Fecha de nacimiento"/>
+            <!-- Nuevo: Campo EMPLOYEEID -->
+            <Input
+                id="inputEmployeeId"
+                placeholder="ID de Empleado"
+                value="{newUserModel>/EMPLOYEEID}" />
+
+            <!-- Nuevo: Campo EXTENSION -->
+            <Input
+                id="inputExtension"
+                placeholder="Extensión"
+                value="{newUserModel>/EXTENSION}" />
+
+            <!-- Campo existente: Número telefónico -->
+            <Input
+                id="inputUserPhoneNumber"
+                placeholder="Número telefónico"
+                value="{newUserModel>/PHONENUMBER}" />
+
+            <!-- Campo existente: Correo Electrónico -->
+            <Input
+                id="inputUserEmail"
+                placeholder="Correo Electrónico"
+                value="{newUserModel>/EMAIL}" />
+
+            <!-- Campo existente: Fecha de nacimiento -->
+            <DatePicker
+                id="inputUserBirthdayDate"
+                placeholder="Fecha de nacimiento"
+                value="{newUserModel>/BIRTHDAYDATE}" />
+
+            <!-- Nuevo: Campo AVATAR (URL del avatar o similar) -->
+            <Input
+                id="inputUserAvatar"
+                placeholder="URL del Avatar"
+                value="{newUserModel>/AVATAR}" 
+            />
 
             <ComboBox id="comboBoxCompanies" items="{companiesModel>/companies}" selectionChange="onCompanySelected" placeholder="Compañía">
                 <core:Item key="{companiesModel>VALUEID}" text="{companiesModel>VALUE}" />
@@ -38,6 +94,39 @@
             </VBox>
             
             <Input id="inputUserFunction" placeholder="Función que ejerce"/>
+                            
+            <!-- Grupo: Datos de dirección -->
+      <Title text="Dirección" level="H4" class="sapUiSmallMarginTop"/>
+      <!-- Nuevo: Calle -->
+      <Input
+          id="inputStreetUser"
+          placeholder="Calle"
+          value="{newUserModel>/STREET}" />
+      <!-- Nuevo: Código Postal -->
+      <Input
+          id="inputPostalCodeUser"
+          placeholder="Código Postal"
+          value="{newUserModel>/POSTALCODE}" />
+      <!-- Nuevo: Ciudad -->
+      <Input
+          id="inputCityUser"
+          placeholder="Ciudad"
+          value="{newUserModel>/CITY}" />
+      <!-- Nuevo: Región -->
+      <Input
+          id="inputRegionUser"
+          placeholder="Región"
+          value="{newUserModel>/REGION}" />
+      <!-- Nuevo: Estado -->
+      <Input
+          id="inputStateUser"
+          placeholder="Estado"
+          value="{newUserModel>/STATE}" />
+      <!-- Nuevo: País -->
+      <Input
+          id="inputCountryUser"
+          placeholder="País"
+          value="{newUserModel>/COUNTRY}" />
 
         </VBox>
 

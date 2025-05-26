@@ -31,7 +31,7 @@
                             <ToolbarSpacer />
                             <SearchField
                                 width="20rem"
-                                id="searchField"
+                                id="CatalogSearchField"
                                 placeholder="Buscar en todos los campos..."
                                 liveChange="onFilterChange"
                                 showSearchButton="false"
