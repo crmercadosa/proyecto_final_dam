@@ -9,15 +9,6 @@
 
   <m:VBox class="sapUiContentPadding">
 
-    <!-- 🔹 Encabezado con botones -->
-    <m:Toolbar>
-      <m:Title text="Detalles de rol: {selectedRole>/ROLENAME}" level="H2" />
-      <m:ToolbarSpacer />
-      <m:Button text="Editar" type="Emphasized" icon="sap-icon://edit" press=".onUpdateRole" />
-      <m:Button text="Desactivar" icon="sap-icon://delete" press=".onDesactivateRole" type="Attention" />
-      <m:Button text="Eliminar" icon="sap-icon://delete" type="Reject" press=".onDeleteRole" />
-    </m:Toolbar>
-
     <!-- 🔹 Información del rol -->
     <m:VBox id="roleInfoBox" class="sapUiSmallMargin">
       <m:Text id="roleIdText" text="ID: {selectedRole>/ROLEID}" />
@@ -48,28 +39,28 @@
           <tl:Column>
             <m:Label text="Proceso" />
             <tl:template>
-              <m:Text text="{selectedRole>PROCESSNAME}" />
+              <m:Text text="{PROCESSNAME}" />
             </tl:template>
           </tl:Column>
           <tl:Column>
             <m:Label text="Aplicación" />
             <tl:template>
-              <m:Text text="{selectedRole>APPLICATIONNAME}" />
+              <m:Text text="{APPLICATIONNAME}" />
             </tl:template>
           </tl:Column>
           <tl:Column>
             <m:Label text="Vista" />
             <tl:template>
-              <m:Text text="{selectedRole>VIEWNAME}" />
+              <m:Text text="{VIEWNAME}" />
             </tl:template>
           </tl:Column>
           <tl:Column>
             <m:Label text="Privilegios" />
             <tl:template>
               <m:HBox wrap="Wrap">
-                <m:FlexBox wrap="Wrap" items="{selectedRole>PRIVILEGES}">
+                <m:FlexBox wrap="Wrap" items="{PRIVILEGES}">
                   <m:items>
-                    <m:ObjectStatus text="{selectedRole>PRIVILEGENAME}" class="sapUiTinyMarginEnd sapUiTinyMarginTop" />
+                    <m:ObjectStatus text="{PRIVILEGENAME}" class="sapUiTinyMarginEnd sapUiTinyMarginTop" />
                   </m:items>
                 </m:FlexBox>
               </m:HBox>
@@ -102,13 +93,13 @@
           <tl:Column>
             <m:Label text="Usuario" />
             <tl:template>
-              <m:Text text="{selectedRole>USERID}" />
+              <m:Text text="{USERID}" />
             </tl:template>
           </tl:Column>
           <tl:Column>
             <m:Label text="Nombre completo" />
             <tl:template>
-              <m:Text text="{selectedRole>USERNAME}" />
+              <m:Text text="{USERNAME}" />
             </tl:template>
           </tl:Column>
         </tl:columns>

@@ -11,7 +11,9 @@
 
     <m:Toolbar design="Transparent" class="customRoleToolbar">
       <m:Button text="Crear" icon="sap-icon://add" type="Accept" press=".onOpenDialog" />
-
+      <m:Button text="Editar" type="Emphasized" icon="sap-icon://edit" press=".onUpdateRole" />
+      <m:Button text="Desactivar" icon="sap-icon://delete" press=".onDesactivateRole" type="Attention" />
+      <m:Button text="Eliminar" icon="sap-icon://delete" type="Reject" press=".onDeleteRole" />
       <m:SearchField id="searchRoleName" width="25rem" placeholder="Buscar roles..." liveChange=".onMultiSearch" />
 
       <m:ToolbarSpacer />
