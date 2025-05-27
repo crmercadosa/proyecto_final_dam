@@ -1,3 +1,5 @@
+// @ts-nocheck
+/* eslint-disable no-console */
 sap.ui.define(
   [
     "sap/ui/core/mvc/Controller",
@@ -69,6 +71,7 @@ sap.ui.define(
               { key: "", text: "Cargando textos..." }, // Placeholder for i18n
               { key: "MACrossover", text: "Cargando textos..." },
               { key: "Reversión Simple", text: "Cargando textos..." },
+              { key: "Supertrend", text: "Cargando textos..."}
             ],
             // IMPORTANT: Initialize as an ARRAY of strings for VizFrame FeedItem
             chartMeasuresFeed: ["PrecioCierre", "Señal BUY", "Señal SELL"],
@@ -177,6 +180,12 @@ sap.ui.define(
                       "movingAverageReversionSimpleStrategy"
                     ),
                   },
+                  {
+                    key: "Supertrend",
+                    text: this._oResourceBundle.getText(
+                      "movingAverageSupertrendStrategy"
+                    ),
+                  }
                 ]);
                 console.log("Textos de i18n cargados correctamente.");
               } else {
@@ -201,6 +210,7 @@ sap.ui.define(
               { key: "", text: "No i18n: Seleccione..." },
               { key: "MACrossover", text: "No i18n: Cruce Medias..." },
               { key: "Reversión Simple", text: "No i18n: Reversion Simple..." },
+              { key: "Supertrend", text: "No i18n: Supertrend"}
             ]);
           }
 
@@ -394,6 +404,8 @@ sap.ui.define(
           let apiStrategyName = strategy; // Usamos una variable para el nombre de la API
           if (strategy === "Reversión Simple") {
             apiStrategyName = "reversionsimple";
+          }else if (strategy === "Supertrend"){
+            apiStrategyName = "supertrend";
           }
 
           var SPECS = []; // Initialize as array
@@ -406,7 +418,27 @@ sap.ui.define(
                 VALUE: rsi,
               },
             ];
-          } else {
+          } else if(strategy === "supertrend"){
+                        SPECS = [
+              {
+                INDICATOR: "ma_length",
+                VALUE: oStrategyModel.getProperty("/ma_length"), // Asegúrate de que el tipo de dato sea correcto (número si lo esperas como número)
+              },
+              {
+                INDICATOR: "atr",
+                VALUE: oStrategyModel.getProperty("/atr"), // Asegúrate de que el tipo de dato sea correcto
+              },
+              {
+                INDICATOR: "mult",
+                VALUE: oStrategyModel.getProperty("/mult"), // Asegúrate de que el tipo de dato sea correcto
+              },
+              {
+                INDICATOR: "rr",
+                VALUE: oStrategyModel.getProperty("/rr"), // Asegúrate de que el tipo de dato sea correcto
+              },
+            ];
+          }
+           else {
             // Default for MACrossover or any other strategy
             SPECS = [
               {
@@ -584,7 +616,7 @@ sap.ui.define(
          * @private
          */
         _prepareTableData: function (aData, aSignals) {
-          if (!Array.isArray(aData)) return [];
+          if (!Array.isArray(aData)) {return [];}
 
           return aData.map((oItem, index) => {
             // Encuentra la señal correspondiente para esta fecha, si existe
@@ -607,7 +639,8 @@ sap.ui.define(
             let longMA = null;
             let rsi = null;
             let sma = null; // Variable para la SMA simple
-
+            let ma = null;
+            let atr = null;
             if (Array.isArray(oItem.INDICATORS)) {
               oItem.INDICATORS.forEach((indicator) => {
                 // Asegúrate de que estos nombres coincidan EXACTAMENTE con lo que tu API devuelve
@@ -621,7 +654,14 @@ sap.ui.define(
                 } else if (indicator.INDICATOR === "sma") {
                   // Nuevo indicador para Reversión Simple
                   sma = parseFloat(indicator.VALUE);
-                }
+                } else if (indicator.INDICATOR === "ma") {
+                  // Nuevo indicador para longitud de MA
+                  ma = parseFloat(indicator.VALUE);
+                } 
+                else if (indicator.INDICATOR === "atr") {
+                  // Nuevo indicador para ATR
+                  atr = parseFloat(indicator.VALUE);
+                } 
               });
             }
 
@@ -639,6 +679,12 @@ sap.ui.define(
             if (sma !== null && !isNaN(sma)) {
               // Incluir SMA simple si tiene valor
               indicatorParts.push(`SMA: ${sma.toFixed(2)}`); // Formatear a 2 decimales
+            }
+            if (ma !== null && !isNaN(ma)) {
+              indicatorParts.push(`MA: ${ma.toFixed(2)}`); // Formatear a 2 decimales
+            }
+            if (atr !== null && !isNaN(atr)) {
+              indicatorParts.push(`ATR: ${atr.toFixed(2)}`); // Formatear a 2 decimales
             }
 
             const indicatorsText =
@@ -662,6 +708,8 @@ sap.ui.define(
               RSI: rsi,
               SMA: sma, // Asegúrate de incluir SMA aquí para que el gráfico pueda acceder a él
               // Signal points on chart (only show value if a signal exists)
+              MA: ma,
+              ATR: atr,
               BUY_SIGNAL:
                 signal.TYPE === "buy" ? parseFloat(oItem.CLOSE) : null,
               SELL_SIGNAL:
@@ -705,6 +753,8 @@ sap.ui.define(
             aMeasures.push("SHORT_MA", "LONG_MA"); // Estos nombres coinciden en tu XML
           } else if (sStrategyKey === "Reversión Simple") {
             aMeasures.push("RSI", "SMA"); // Estos nombres coinciden en tu XML
+          } else if( sStrategyKey === "Supertrend") {
+            aMeasures.push("MA","ATR");
           }
 
           // Actualiza la propiedad del modelo con las medidas actuales
@@ -831,7 +881,7 @@ sap.ui.define(
          * Toggles the visibility of advanced filters in the history popover.
          */
         onToggleAdvancedFilters: function () {
-          if (!this._oHistoryPopover) return;
+          if (!this._oHistoryPopover) {return;}
 
           const oPanel = sap.ui.getCore().byId("advancedFiltersPanel"); // Access panel from core if it's not a direct child of the view
 
