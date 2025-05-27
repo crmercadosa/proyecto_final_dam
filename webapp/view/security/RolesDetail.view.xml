@@ -10,13 +10,7 @@
   <m:VBox class="sapUiContentPadding">
 
     <!-- 🔹 Encabezado con botones -->
-    <m:Toolbar>
-      <m:Title text="Detalles de rol: {selectedRole>/ROLENAME}" level="H2" />
-      <m:ToolbarSpacer />
-      <m:Button text="Editar" type="Emphasized" icon="sap-icon://edit" press=".onUpdateRole" />
-      <m:Button text="Desactivar" icon="sap-icon://delete" press=".onDesactivateRole" type="Attention" />
-      <m:Button text="Eliminar" icon="sap-icon://delete" type="Reject" press=".onDeleteRole" />
-    </m:Toolbar>
+    
 
     <!-- 🔹 Información del rol -->
     <m:VBox id="roleInfoBox" class="sapUiSmallMargin">

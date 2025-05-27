@@ -34,9 +34,10 @@ sap.ui.define([
 
     loadCatalog: async function (labelId, modelName) {
       try {
-        const res = await fetch(`http://localhost:4004/api/sec/catalogsR?procedure=get&type=bylabelid&labelid=${labelId}`);
-        const data = await res.json();
-        const values = data.value?.[0]?.VALUES || [];
+        const env = await fetch("env.json").then(r => r.json());
+        const response = await fetch(env.API_VALUES_URL_BASE + `getallvalues?LABELID=${labelId}`);
+        const data = await response.json();
+        const values = data?.value || [];
         this.getView().setModel(new JSONModel({ values }), modelName);
       } catch (e) {
         console.error("Error cargando catálogo", labelId, e);
@@ -266,6 +267,47 @@ sap.ui.define([
     onDialogClose: function () {
       const oDialog = this.byId("dialogEditRole");
       if (oDialog) oDialog.close();
-    }
+    },
+
+    onRoleSelected: async function () {
+      const oTable = this.byId("rolesTable");
+      const iIndex = oTable.getSelectedIndex();
+      if (iIndex === -1) {
+        MessageToast.show("Selecciona un rol válido.");
+        return;
+      }
+
+      const oRolesView = this.getView().getParent().getParent();
+      const oUiStateModel = oRolesView.getModel("uiState");
+      if (oUiStateModel) oUiStateModel.setProperty("/isDetailVisible", true);
+
+      const oRole = oTable.getContextByIndex(iIndex).getObject();
+      const sId = encodeURIComponent(oRole.ROLEID);
+
+      try {
+        const env = await fetch("env.json").then(r => r.json());
+
+        // Llama al endpoint correcto para obtener los detalles del rol
+        const res = await fetch(env.API_ROLES_URL_BASE + `getroledetails?ROLEID=${sId}`);
+        const result = await res.json();
+
+        // Si la respuesta viene como { value: [ ... ] }, toma el primer elemento
+        const roleDetail = Array.isArray(result.value) ? result.value[0] : result;
+
+        if (!roleDetail?.ROLEID) {
+          MessageBox.warning("No se encontró información del rol.");
+          return;
+        }
+
+        this.getOwnerComponent().setModel(new JSONModel(roleDetail), "selectedRole");
+      } catch (e) {
+        MessageBox.error("Error al obtener el rol: " + e.message);
+      }
+    },
+
+    privilegesFormatter: function(aPrivileges) {
+      if (!aPrivileges || !Array.isArray(aPrivileges)) return "";
+      return aPrivileges.map(p => p.PRIVILEGENAME || p.PRIVILEGEID).join(", ");
+    },
   });
 });
