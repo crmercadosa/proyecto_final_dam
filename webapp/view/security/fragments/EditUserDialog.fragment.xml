@@ -11,13 +11,32 @@
         <VBox id="EditUserDialogVbox" class="sapUiSmallMargin">
             <Input id="inputEditUserId" placeholder="ID de Usuario"/>
 
-            <Input id="inputEditUsername" placeholder="Nombre Completo"/>
+             <!-- Nuevo: Campo PASSWORD -->
+            <Input id="inputEditUserPassword" placeholder="Contraseña" type="Password"/>
             
+            <!-- Nuevo: Campo ALIAS -->
+            <Input id="inputEditUserAlias" placeholder="Alias"/>
+
+            <!-- Nuevo: Campos FIRSTNAME y LASTNAME -->
+            <Input id="inputEditUserFirstName" placeholder="Primer Nombre"/>
+            
+            <Input id="inputEditUserLastName" placeholder="Apellido"/>
+
+            <!-- Nuevo: Campo EMPLOYEEID -->
+            <Input id="inputEditEmployeeId" placeholder="ID de Empleado"/>
+
+            <!-- Nuevo: Campo EXTENSION -->
+            <Input id="inputEditExtension" placeholder="Extensión"/>
+
             <Input id="inputEditUserPhoneNumber" placeholder="Número telefónico"/>
 
             <Input id="inputEditUserEmail" placeholder="Correo Electrónico"/>
 
-            <DatePicker id="inputEditUserBirthdayDate" placeholder="Fecha de nacimiento"/>
+            <DatePicker id="inputEditUserBirthdayDate" placeholder="Fecha de nacimiento" displayFormat="long" />
+
+            <!-- Nuevo: Campo AVATAR (URL del avatar o similar) -->
+            <Input id="inputEditUserAvatar" placeholder="URL del Avatar"/>
+
 
             <ComboBox id="comboBoxEditCompanies" items="{companiesModel>/companies}" selectionChange="onCompanySelected" placeholder="Compañía">
                 <core:Item key="{companiesModel>VALUEID}" text="{companiesModel>VALUE}" />
@@ -27,6 +46,7 @@
             <ComboBox id="comboBoxEditCedis" items="{cedisModel>/cedis}" selectionChange="onCediSelected" placeholder="Departamento">
                 <core:Item key="{cedisModel>VALUEID}" text="{cedisModel>VALUE}" />
             </ComboBox>
+
 
             <ComboBox id="comboBoxEditRoles" items="{rolesModel>/roles}" selectionChange="onRoleSelected" placeholder="Selecciona un Rol">
                 <core:Item key="{rolesModel>ROLEID}" text="{rolesModel>ROLENAME}" />
@@ -38,6 +58,27 @@
             </VBox>
             
             <Input id="inputEditUserFunction" placeholder="Función que ejerce"/>
+
+            <!-- Grupo: Datos de dirección -->
+            <Title text="Dirección" level="H4" class="sapUiSmallMarginTop"/>
+            
+            <!-- Nuevo: Calle -->
+            <Input id="inputEditStreetUser" placeholder="Calle"/>
+            
+            <!-- Nuevo: Código Postal -->
+            <Input id="inputEditPostalCodeUser" placeholder="Código Postal"/>
+            
+            <!-- Nuevo: Ciudad -->
+            <Input id="inputEditCityUser" placeholder="Ciudad"/>
+            
+            <!-- Nuevo: Región -->
+            <Input id="inputEditRegionUser" placeholder="Región"/>
+            
+            <!-- Nuevo: Estado -->
+            <Input id="inputEditStateUser" placeholder="Estado"/>
+            
+            <!-- Nuevo: País -->
+            <Input id="inputEditCountryUser" placeholder="País"/>            
 
         </VBox>
 

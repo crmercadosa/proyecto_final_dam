@@ -1,3 +1,4 @@
+/* eslint-disable curly */
 /* eslint-disable valid-jsdoc */
 /* eslint-disable linebreak-style */
 /* eslint-disable no-console */
@@ -222,13 +223,28 @@ sap.ui.define([
 
             // Obtener valores del formulario
             var UserId = oView.byId("inputUserId").getValue();
-            var Username = oView.byId("inputUsername").getValue();
+            var Pass = oView.byId("inputUserPassword").getValue();
+            var Alias = oView.byId("inputUserAlias").getValue();
+            var FirstN = oView.byId("inputUserFirstName").getValue();
+            var LastN = oView.byId("inputUserLastName").getValue();
+            var Username = FirstN + " " + LastN;
+            var EmplId = oView.byId("inputEmployeeId").getValue();
+            var Ext = oView.byId("inputExtension").getValue();
+            var Phone = oView.byId("inputUserPhoneNumber").getValue();
             var Email = oView.byId("inputUserEmail").getValue();
             var Birthday = oView.byId("inputUserBirthdayDate").getDateValue();
+            var Avatar = oView.byId("inputUserAvatar").getValue();
             var Company = oView.byId("comboBoxCompanies").getSelectedItem().getText();
-            var Phone = oView.byId("inputUserPhoneNumber").getValue();
             var Department = oView.byId("comboBoxCedis").getSelectedItem().getText();
+            var CediId = oView.byId("comboBoxCedis").getSelectedKey();
             var Function = oView.byId("inputUserFunction").getValue();
+
+            var Street = oView.byId("inputStreetUser").getValue();
+            var Postal = Number(oView.byId("inputPostalCodeUser").getValue());
+            var City = oView.byId("inputCityUser").getValue();
+            var Region = oView.byId("inputRegionUser").getValue();
+            var State = oView.byId("inputStateUser").getValue();
+            var Country = oView.byId("inputCountryUser").getValue();
 
             // Roles seleccionados
             var SelectedRoles = oView.byId("selectedRolesVBox").getItems().map(oItem => ({
@@ -244,13 +260,27 @@ sap.ui.define([
             var userBody = {
                 user: {
                     USERID: UserId,
+                    PASSWORD: Pass,
                     USERNAME: Username,
-                    EMAIL: Email,
+                    ALIAS: Alias,
+                    FIRSTNAME: FirstN,
+                    LASTNAME: LastN,
                     BIRTHDAYDATE: Birthday,
                     COMPANYNAME: Company,
+                    CEDIID: CediId,
+                    EMPLOYEEID: EmplId,
+                    EMAIL: Email,
                     PHONENUMBER: Phone,
+                    EXTENSION: Ext,
                     DEPARTMENT: Department,
                     FUNCTION: Function,
+                    STREET: Street,
+                    POSTALCODE: Postal,
+                    CITY: City,
+                    REGION: Region,
+                    STATE: State,
+                    COUNTRY: Country,
+                    AVATAR: Avatar,
                     ROLES: SelectedRoles
                 }
             };
@@ -317,7 +347,7 @@ sap.ui.define([
         setUpdateUserDialogData: function(UserData) {
             var oView = this.getView();
             oView.byId("inputEditUserId").setValue(UserData.USERID || "");
-            oView.byId("inputEditUsername").setValue(UserData.USERNAME || "");
+            //oView.byId("inputEditUsername").setValue(UserData.USERNAME || "");
             oView.byId("inputEditUserEmail").setValue(UserData.EMAIL || "");
 
             var oComboCompanies = oView.byId("comboBoxEditCompanies");
@@ -451,7 +481,6 @@ sap.ui.define([
                 })
                 .catch(err => MessageToast.show("Error al actualizar usuario: " + err.message));
         },
-
 
 
         // ===================================================
@@ -682,20 +711,61 @@ sap.ui.define([
 
         resetInputDialog: function () {
             var oView = this.getView();
-            ["inputUserId", "inputUsername", "inputUserEmail", "inputUserBirthdayDate",
-             "comboBoxCompanies", "inputUserPhoneNumber", "comboBoxCedis", "inputUserFunction","comboBoxRoles"]
-                .forEach(id => oView.byId(id).setValue(""));
-            
-            oView.byId("selectedRolesVBox").removeAllItems();
+
+            // Limpiar inputs de texto
+            [
+                "inputUserId", "inputUserPassword", "inputUserAlias", "inputUserFirstName",
+                "inputUserLastName", "inputEmployeeId", "inputExtension", "inputUserPhoneNumber",
+                "inputUserEmail", "inputUserFunction", "inputStreetUser", "inputPostalCodeUser",
+                "inputCityUser", "inputRegionUser", "inputStateUser", "inputCountryUser", "inputUserAvatar"
+            ].forEach(id => {
+                var input = oView.byId(id);
+                if (input) {input.setValue("");}
+            });
+
+            // Limpiar date picker
+            var dateInput = oView.byId("inputUserBirthdayDate");
+            dateInput.setDateValue(null);
+
+            // Limpiar ComboBoxes (deseleccionar items)
+            ["comboBoxCompanies", "comboBoxCedis", "comboBoxRoles"].forEach(id => {
+                var combo = oView.byId(id);
+                if (combo) combo.setSelectedItem(null);
+            });
+
+            // Limpiar VBox de roles seleccionados
+            var rolesVBox = oView.byId("selectedRolesVBox");
+            if (rolesVBox) rolesVBox.removeAllItems();
         },
+
 
         resetInputEditDialog: function () {
             var oView = this.getView();
-            ["inputEditUserId", "inputEditUsername", "inputEditUserPhoneNumber", "inputEditUserEmail",
-             "inputEditUserBirthdayDate", "comboBoxEditCompanies", "comboBoxEditCedis", "comboBoxEditRoles","inputEditUserFunction"]
-                .forEach(id => oView.byId(id).setValue(""));
-            
-            oView.byId("selectedEditRolesVBox").removeAllItems();
+
+            // Limpiar inputs de texto
+            [
+                "inputEditUserId", "inputEditUserPassword", "inputEditUserAlias", "inputEditUserFirstName",
+                "inputEditUserLastName", "inputEditEmployeeId", "inputEditExtension", "inputEditUserPhoneNumber",
+                "inputEditUserEmail", "inputEditUserFunction", "inputEditStreetUser", "inputEditPostalCodeUser",
+                "inputEditCityUser", "inputEditRegionUser", "inputEditStateUser", "inputEditCountryUser", "inputEditUserAvatar"
+            ].forEach(id => {
+                var input = oView.byId(id);
+                if (input) {input.setValue("");}
+            });
+
+            // Limpiar date picker
+            var dateInput = oView.byId("inputEditUserBirthdayDate");
+            dateInput.setDateValue(null);
+
+            // Limpiar ComboBoxes (deseleccionar items)
+            ["comboBoxEditCompanies", "comboBoxEditCedis", "comboBoxEditRoles"].forEach(id => {
+                var combo = oView.byId(id);
+                if (combo) combo.setSelectedItem(null);
+            });
+
+            // Limpiar VBox de roles seleccionados
+            var rolesVBox = oView.byId("selectedEditRolesVBox");
+            if (rolesVBox) rolesVBox.removeAllItems();
         }
 
 

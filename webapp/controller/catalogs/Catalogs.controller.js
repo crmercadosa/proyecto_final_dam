@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable no-extra-bind */
 /* eslint-disable comma-dangle */
 /* eslint-disable curly */
@@ -21,7 +22,9 @@ sap.ui.define(
         // ---------------------------------------------------- INICIO DE LA VISTA
         onInit: function () {
           this._oDialog = null;
+          this._aAllValues = [];
           this.loadLabels();
+          this.loadValues();
         },
 
         loadLabels: function(){
@@ -39,11 +42,27 @@ sap.ui.define(
                     if(err.message === ("Cannot read properties of undefined (reading 'setModel')")){
                         return;
                     }else{
-                        MessageToast.show("Error al cargar usuarios: " + err.message);
+                        MessageToast.show("Error al cargar catalogos: " + err.message);
                     }      
                 });   
         },
 
+        loadValues: function(){
+            fetch("env.json")
+                .then(res => res.json())
+                .then(env => fetch(env.API_VALUES_URL_BASE + "getallvalues"))
+                .then(res => res.json())
+                .then(data => {
+                    this._aAllValues = data.value || [];
+                })
+                .catch(err => {
+                    if(err.message === ("Cannot read properties of undefined (reading 'setModel')")){
+                        return;
+                    }else{
+                        MessageToast.show("Error al cargar valores: " + err.message);
+                    }      
+                });   
+        },
         // ---------------------------------------------------- PARA FILTRAR EN LA TABLA
         onFilterChange: function (oEvent) {
           var sQuery = oEvent.getSource().getValue();
@@ -88,8 +107,8 @@ sap.ui.define(
             LABEL: "",
             INDEX: "",
             COLLECTION: "",
-            SECTION: "seguridad", // Valor por defecto
-            SEQUENCE: 10, // Valor por defecto
+            SECTION: "", // Valor por defecto
+            SEQUENCE: 0, // Valor por defecto
             IMAGE: "",
             DESCRIPTION: "",
             DETAIL_ROW: {
@@ -219,7 +238,7 @@ sap.ui.define(
 
           // Crear modelo para edición
           var oEditModel = new JSONModel($.extend(true, {}, oData));
-          this.getView().setModel(oEditModel, "editModel");
+          this.getView().setModel(oEditModel, "editModel"); //AQUI SE HACE REFERENCIA HACIA EL MODELO DE EDICIÓN
 
           this.labelidToUpdate = oData.LABELID;
 
@@ -232,7 +251,6 @@ sap.ui.define(
             }).then(
               function (oDialog) {
                 this._oEditDialog = oDialog;
-                // @ts-ignore
                 this.getView().addDependent(oDialog);
                 oDialog.open();
               }.bind(this)
@@ -243,8 +261,9 @@ sap.ui.define(
         },
 
         onSaveEdit: function () {
-          var oEditModel = this.getView().getModel("editModel");
+          var oEditModel = this.getView().getModel("editModel"); //AQUI TRAE LA INFO DEL MODELO DE EDICIÓN
           var oEditedData = oEditModel.getData();
+          
           // Obtener el modelo de la tabla
           var oTableModel = this.getView().getModel();
           var aData = oTableModel.getProperty("/value") || [];
@@ -446,7 +465,6 @@ sap.ui.define(
 
         _refreshCatalogTable: function () {
           // Implementa la lógica para refrescar los datos de la tabla
-          // @ts-ignore
           var oTable = this.byId("catalogTable");
           var oModel = this.getView().getModel();
 
@@ -464,37 +482,72 @@ sap.ui.define(
           var oItem = oEvent.getParameter("listItem");
           var oContext = oItem.getBindingContext();
           var oSelectedData = oContext.getObject(); // Obtiene los datos del ítem seleccionado
-          var that = this;
-          var sLabelID = oSelectedData.LABELID;
+          // var that = this;
+          // var sLabelID = oSelectedData.LABELID;
+          
+          // Codigo nuevo que lee los valores desde el array que se carga al principio de la vista
+          var aFilteredValues = this._aAllValues.filter(function (oValue) {
+            return oValue.LABELID === oSelectedData.LABELID;
+          });
+          var oAllLabels = this.getView().getModel().getProperty("/value");
+          var aAllValues = this._aAllValues;
+          var oValuesView = this.byId("XMLViewValues");
+          if (oValuesView) {
+            oValuesView.loaded().then(
+              function () {
+                var oController = oValuesView.getController();
+                if (oController && oController.loadValues) {
+                  // Pasar los valores filtrados
+                  oController.loadValues(
+                    aFilteredValues,
+                    aAllValues,
+                    oAllLabels
+                  );
 
-          fetch("env.json")
-            .then(res => res.json())
-            .then(env => fetch(env.API_VALUES_URL_BASE + "getallvalues?LABELID=" + sLabelID))
-            .then(res => res.json())
-            .then(data => {
-              var oValuesView = that.byId("XMLViewValues");
-              if (oValuesView) {
-                oValuesView.loaded().then(function () {
-                  var oController = oValuesView.getController();
-                  if (oController && oController.loadValues) {
-                    // Pasa los valores y también el ítem seleccionado
-                    oController.loadValues(data.value || []);
+                  // Actualizar el selectedValue en el modelo "values"
+                  oValuesView
+                    .getModel("values")
+                    .setProperty("/selectedValue", oSelectedData);
+                  oValuesView
+                    .getModel("values")
+                    .setProperty("/AllValues", aAllValues);
+                  oValuesView
+                    .getModel("values")
+                    .setProperty("/AllLabels", oAllLabels);
+                }
+              }.bind(this)
+            );
+          }
 
-                    // Actualiza el selectedValue en el modelo values
-                    oValuesView
-                      .getModel("values")
-                      .setProperty("/selectedValue", oSelectedData);
-                  }
-                });
-              }
-            })
-            .catch(err => {
-                if(err.message === ("Cannot read properties of undefined (reading 'setModel')")){
-                    return;
-                }else{
-                    MessageToast.show("Error al cargar usuarios: " + err.message);
-                }      
-            });   
+          // Codigo antiguo que cargaba la api de GET VALUES BY ID
+          // fetch("env.json")
+          //   .then(res => res.json())
+          //   .then(env => fetch(env.API_VALUES_URL_BASE + "getallvalues?LABELID=" + sLabelID))
+          //   .then(res => res.json())
+          //   .then(data => {
+          //     var oValuesView = that.byId("XMLViewValues");
+          //     if (oValuesView) {
+          //       oValuesView.loaded().then(function () {
+          //         var oController = oValuesView.getController();
+          //         if (oController && oController.loadValues) {
+          //           // Pasa los valores y también el ítem seleccionado
+          //           oController.loadValues(data.value || []);
+
+          //           // Actualiza el selectedValue en el modelo values
+          //           oValuesView
+          //             .getModel("values")
+          //             .setProperty("/selectedValue", oSelectedData);
+          //         }
+          //       });
+          //     }
+          //   })
+          //   .catch(err => {
+          //       if(err.message === ("Cannot read properties of undefined (reading 'setModel')")){
+          //           return;
+          //       }else{
+          //           MessageToast.show("Error al cargar usuarios: " + err.message);
+          //       }      
+          //   });   
                 
           // Expandir el panel derecho
           var oSplitter = this.byId("mainSplitter");

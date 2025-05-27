@@ -10,70 +10,36 @@
     >
         <VBox id="AddUserDialogVbox" class="sapUiSmallMargin">
 
-            <Input
-                id="inputUserId"
-                placeholder="ID de Usuario"
-                value="{newUserModel>/USERID}" />
+            <Input id="inputUserId" placeholder="ID de Usuario"/>
 
             <!-- Nuevo: Campo PASSWORD -->
-            <Input
-                id="inputUserPassword"
-                placeholder="Contraseña"
-                type="Password"
-                value="{newUserModel>/PASSWORD}" />
+            <Input id="inputUserPassword" placeholder="Contraseña" type="Password" />
             
             <!-- Nuevo: Campo ALIAS -->
-            <Input
-                id="inputUserAlias"
-                placeholder="Alias"
-                value="{newUserModel>/ALIAS}" />
+            <Input id="inputUserAlias" placeholder="Alias"/>
 
             <!-- Nuevo: Campos FIRSTNAME y LASTNAME -->
-            <Input
-                id="inputUserFirstName"
-                placeholder="Primer Nombre"
-                value="{newUserModel>/FIRSTNAME}" />
-            <Input
-                id="inputUserLastName"
-                placeholder="Apellido"
-                value="{newUserModel>/LASTNAME}" />
+            <Input id="inputUserFirstName" placeholder="Primer Nombre"/>
+            
+            <Input id="inputUserLastName" placeholder="Apellido"/>
 
             <!-- Nuevo: Campo EMPLOYEEID -->
-            <Input
-                id="inputEmployeeId"
-                placeholder="ID de Empleado"
-                value="{newUserModel>/EMPLOYEEID}" />
+            <Input id="inputEmployeeId" placeholder="ID de Empleado"/>
 
             <!-- Nuevo: Campo EXTENSION -->
-            <Input
-                id="inputExtension"
-                placeholder="Extensión"
-                value="{newUserModel>/EXTENSION}" />
+            <Input id="inputExtension" placeholder="Extensión"/>
 
             <!-- Campo existente: Número telefónico -->
-            <Input
-                id="inputUserPhoneNumber"
-                placeholder="Número telefónico"
-                value="{newUserModel>/PHONENUMBER}" />
+            <Input id="inputUserPhoneNumber" placeholder="Número telefónico"/>
 
             <!-- Campo existente: Correo Electrónico -->
-            <Input
-                id="inputUserEmail"
-                placeholder="Correo Electrónico"
-                value="{newUserModel>/EMAIL}" />
+            <Input id="inputUserEmail" placeholder="Correo Electrónico"/>
 
             <!-- Campo existente: Fecha de nacimiento -->
-            <DatePicker
-                id="inputUserBirthdayDate"
-                placeholder="Fecha de nacimiento"
-                value="{newUserModel>/BIRTHDAYDATE}" />
+            <DatePicker id="inputUserBirthdayDate" placeholder="Fecha de nacimiento" displayFormat="long" />
 
             <!-- Nuevo: Campo AVATAR (URL del avatar o similar) -->
-            <Input
-                id="inputUserAvatar"
-                placeholder="URL del Avatar"
-                value="{newUserModel>/AVATAR}" 
-            />
+            <Input id="inputUserAvatar" placeholder="URL del Avatar" />
 
             <ComboBox id="comboBoxCompanies" items="{companiesModel>/companies}" selectionChange="onCompanySelected" placeholder="Compañía">
                 <core:Item key="{companiesModel>VALUEID}" text="{companiesModel>VALUE}" />
@@ -96,46 +62,34 @@
             <Input id="inputUserFunction" placeholder="Función que ejerce"/>
                             
             <!-- Grupo: Datos de dirección -->
-      <Title text="Dirección" level="H4" class="sapUiSmallMarginTop"/>
-      <!-- Nuevo: Calle -->
-      <Input
-          id="inputStreetUser"
-          placeholder="Calle"
-          value="{newUserModel>/STREET}" />
-      <!-- Nuevo: Código Postal -->
-      <Input
-          id="inputPostalCodeUser"
-          placeholder="Código Postal"
-          value="{newUserModel>/POSTALCODE}" />
-      <!-- Nuevo: Ciudad -->
-      <Input
-          id="inputCityUser"
-          placeholder="Ciudad"
-          value="{newUserModel>/CITY}" />
-      <!-- Nuevo: Región -->
-      <Input
-          id="inputRegionUser"
-          placeholder="Región"
-          value="{newUserModel>/REGION}" />
-      <!-- Nuevo: Estado -->
-      <Input
-          id="inputStateUser"
-          placeholder="Estado"
-          value="{newUserModel>/STATE}" />
-      <!-- Nuevo: País -->
-      <Input
-          id="inputCountryUser"
-          placeholder="País"
-          value="{newUserModel>/COUNTRY}" />
+            <Title text="Dirección" level="H4" class="sapUiSmallMarginTop"/>
+            
+            <!-- Nuevo: Calle -->
+            <Input id="inputStreetUser" placeholder="Calle"/>
+            
+            <!-- Nuevo: Código Postal -->
+            <Input id="inputPostalCodeUser" placeholder="Código Postal"/>
+            
+            <!-- Nuevo: Ciudad -->
+            <Input id="inputCityUser" placeholder="Ciudad"/>
+            
+            <!-- Nuevo: Región -->
+            <Input id="inputRegionUser" placeholder="Región"/>
+            
+            <!-- Nuevo: Estado -->
+            <Input id="inputStateUser" placeholder="Estado"/>
+            
+            <!-- Nuevo: País -->
+            <Input id="inputCountryUser" placeholder="País"/>
 
         </VBox>
 
-        <beginButton>
-            <Button id="SaveNewUser" text="Guardar" type="Emphasized" press="onSaveUser" />
-        </beginButton>
+                <beginButton>
+                    <Button id="SaveNewUser" text="Guardar" type="Emphasized" press="onSaveUser" />
+                </beginButton>
 
-        <endButton>
-            <Button id="CancelSaveUser" text="Cancelar" press="onCancelUser" />
-        </endButton>
+                <endButton>
+                    <Button id="CancelSaveUser" text="Cancelar" press="onCancelUser" />
+                </endButton>
     </Dialog>
 </core:FragmentDefinition>
