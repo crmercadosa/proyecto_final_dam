@@ -10,7 +10,10 @@
   <m:VBox class="sapUiContentPadding">
 
     <!-- 🔹 Encabezado con botones -->
-    
+    <m:OverflowToolbar>
+      <m:Button text="Catálogos" icon="sap-icon://list" type="Transparent" press=".onNavToCatalogs"/>
+      <m:Button text="Usuarios" icon="sap-icon://employee" type="Transparent" press=".onNavToUsers"/>
+    </m:OverflowToolbar>
 
     <!-- 🔹 Información del rol -->
     <m:VBox id="roleInfoBox" class="sapUiSmallMargin">
@@ -24,6 +27,14 @@
       headerText="Procesos y Privilegios"
       expandable="false"
       class="sapUiMediumMarginTop">
+
+      <m:headerToolbar>
+        <m:Toolbar>
+          <m:Title text="Procesos y Privilegios" level="H2"/>
+          <m:ToolbarSpacer/>
+          <m:Button text="Catálogos" icon="sap-icon://list" type="Emphasized" design="Transparent" press=".onNavToCatalogs" class="catalogsHeaderButton"/>
+        </m:Toolbar>
+      </m:headerToolbar>
 
       <tl:Table
         id="processesTable"
@@ -78,6 +89,14 @@
       headerText="Usuarios con este Rol"
       class="sapUiMediumMarginTop"
       expandable="false">
+
+      <m:headerToolbar>
+        <m:Toolbar>
+          <m:Title text="Usuarios con este Rol" level="H2"/>
+          <m:ToolbarSpacer/>
+          <m:Button text="Usuarios" icon="sap-icon://employee" type="Emphasized" design="Transparent" press=".onNavToUsers" class="usersHeaderButton"/>
+        </m:Toolbar>
+      </m:headerToolbar>
 
       <tl:Table
         id="usersTable"

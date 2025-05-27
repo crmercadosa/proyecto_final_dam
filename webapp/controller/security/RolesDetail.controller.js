@@ -156,5 +156,13 @@ sap.ui.define([
       this._pDialog.setTitle("Crear Rol");
       this._pDialog.open();
     },
+
+    onNavToCatalogs: function () {
+      this.getRouter().navTo("RouteCatalogs");
+    },
+
+    onNavToUsers: function () {
+      this.getRouter().navTo("RouteUsersList");
+    },
   });
 });
