@@ -11,7 +11,7 @@
         class="">
         <content>
             <!-- Barra de búsqueda y filtros -->
-            <OverflowToolbar class="">
+            <!-- <OverflowToolbar class="">
                 <SearchField
                     id="searchField"
                     placeholder="Buscar por nombre o símbolo..."
@@ -24,10 +24,10 @@
                     text="Filtros Avanzados"
                     type="Transparent"
                     press=".onToggleAdvancedFilters"/>
-            </OverflowToolbar>
+            </OverflowToolbar> -->
 
             <!-- Panel de Filtros Avanzados -->
-            <VBox id="advancedFiltersPanel" visible="false" class="sapUiSmallMarginBottom">
+            <!-- <VBox id="advancedFiltersPanel" visible="false" class="sapUiSmallMarginBottom">
                 <f:SimpleForm
                     editable="true"
                     layout="ResponsiveGridLayout"
@@ -64,7 +64,7 @@
                         enableTickmarks="true"
                         change=".onFilterChange"/>
                 </f:SimpleForm>
-            </VBox>
+            </VBox> -->
 
 
             <OverflowToolbar>

@@ -274,7 +274,8 @@ sap.ui.define(
           oView.setModel(oSymbolModel, "symbolModel");
         },
 
-        
+
+
 
         /**
          * Configures the properties of the VizFrame.
@@ -589,40 +590,40 @@ sap.ui.define(
 
         loadSimulationsOnce: async function () {
           if (this._simulationsLoaded) return;
-
-          await this.loadSimulations("historyModel");
-          this._simulationsLoaded = true;
+            await this.loadSimulations("historyModel");
+            this._simulationsLoaded = true;
         },
 
         loadSimulations: async function (modelName) {
-        try {
-            const res = await fetch("http://localhost:3333/api/inv/getallSimulations");
-            const data = await res.json();
-            const simulationsWrapper = data.value || [];
-            const simulations = simulationsWrapper[0]?.simulations || [];
+            try {
+                const res = await fetch("http://localhost:3333/api/inv/getallSimulations");
+                const data = await res.json();
+                const simulationsWrapper = data.value || [];
+                const simulations = simulationsWrapper[0]?.simulations || [];
 
-            console.log("Simulaciones reales:", simulations);
+                console.log("Simulaciones reales:", simulations);
 
-            const values = simulations.map(sim => ({
-              simulationName: sim.SIMULATIONNAME,
-              strategyName: sim.STRATEGYID,
-              symbol: sim.SYMBOL,
-              rangeDate: `${new Date(sim.STARTDATE).toISOString().slice(0,10)} - ${new Date(sim.ENDDATE).toISOString().slice(0,10)}`,
-              result: sim.SUMMARY?.REAL_PROFIT ?? 0
-            }));
+                const values = simulations.map(sim => ({
+                  simulationName: sim.SIMULATIONNAME,
+                  strategyName: sim.STRATEGYID,
+                  symbol: sim.SYMBOL,
+                  rangeDate: `${new Date(sim.STARTDATE).toISOString().slice(0,10)} - ${new Date(sim.ENDDATE).toISOString().slice(0,10)}`,
+                  result: sim.SUMMARY?.REAL_PROFIT ?? 0,
+                  _fullRecord: sim // por si luego necesitas volver a cargar todo
+                }));
 
-            this.getView().setModel(
-              new JSONModel({
-                values,
-                filteredCount: Number(simulations.length)
-              }),
-              modelName
-            );
+                this.getView().setModel(
+                  new JSONModel({
+                    values,
+                    filteredCount: Number(simulations.length)
+                  }),
+                  modelName
+                );
 
-      } catch (e) {
-        console.error("Error cargando simulaciones ", e);
-      }
-    },
+          } catch (e) {
+            console.error("Error cargando simulaciones ", e);
+          }
+        },
 
         /**
          * Helper function to format the count of signals by type.
@@ -941,6 +942,7 @@ sap.ui.define(
         onHistoryPress: function (oEvent) {
           if (!this._oHistoryPopover) {
             this._oHistoryPopover = sap.ui.xmlfragment(
+              "myFragmentId",
               "com.invertions.sapfiorimodinv.view.investments.fragments.InvestmentHistoryPanel",
               this
             );
@@ -948,10 +950,307 @@ sap.ui.define(
           }
 
           if (this._oHistoryPopover.isOpen()) {
+            const oTable = sap.ui.core.Fragment.byId("myFragmentId", "historyTable");
+            oTable.removeSelections(); // Elimina todas las selecciones
             this._oHistoryPopover.close();
             return;
           }
           this._oHistoryPopover.openBy(oEvent.getSource());
+        },
+
+        onCloseHistoryPopover: function () {
+            if (this._oHistoryPopover) {
+                  const oTable = sap.ui.core.Fragment.byId("myFragmentId", "historyTable");
+                  oTable.removeSelections(); // Elimina todas las selecciones
+                this._oHistoryPopover.close();
+            }
+        },
+
+        onLoadStrategy: function () {
+            const oTable = sap.ui.core.Fragment.byId("myFragmentId", "historyTable");
+            const oSelectedItem = oTable.getSelectedItem();
+
+            if (!oSelectedItem) {
+                sap.m.MessageToast.show("Por favor selecciona una estrategia antes de cargar.");
+                return;
+            }
+
+            const oContext = oSelectedItem.getBindingContext("historyModel");
+            const oData = oContext.getObject();
+            const fullRecord = oData._fullRecord;
+            console.log("aasdsadsadsa", fullRecord);
+            // Agrupar señales por fecha
+            const signalsByDate = {};
+            (fullRecord.SIGNALS || []).forEach(signal => {
+                const dateKey = signal.DATE?.substring(0, 10);
+                if (dateKey) {
+                    if (!signalsByDate[dateKey]) {
+                        signalsByDate[dateKey] = [];
+                    }
+                    signalsByDate[dateKey].push(signal);
+                }
+            });
+
+            // Procesar CHART_DATA, añadiendo señales agrupadas por día
+            const chartDataProcessed = (fullRecord.CHART_DATA || []).map(item => {
+                const dateKey = item.DATE?.substring(0, 10);
+                const signalsForDay = signalsByDate[dateKey] || [];
+
+                // Si hay señales para ese día, concatenar los campos en arrays
+                const rules = signalsForDay.map(s => s.REASONING);
+                const signals = signalsForDay.map(s => s.TYPE);
+                const shares = signalsForDay.map(s => s.SHARES);
+
+                return {
+                    DATE: dateKey,
+                    OPEN: item.OPEN,
+                    HIGH: item.HIGH,
+                    LOW: item.LOW,
+                    CLOSE: item.CLOSE,
+                    VOLUME: item.VOLUME,
+                    SPECS: item.INDICATORS,
+                    RULES: rules.length > 0 ? rules : [""],
+                    SIGNALS: signals.length > 0 ? signals : [""],
+                    SHARES: shares.length > 0 ? shares : [0]
+                };
+            }).reverse(); // Mostrar desde la fecha más antigua
+
+            // Pasar datos al método que carga la tabla y gráfico
+            this._loadTableDataBySymbol(chartDataProcessed);
+            console.log("Señales", chartDataProcessed);
+            // Para el modelo de resultados también mandamos todas las señales planas invertidas
+            const simplifiedSignals = Object.values(signalsByDate).flat().reverse();
+            const oResultModel = this.getView().getModel("strategyResultModel");
+            oResultModel.setProperty("/signals", simplifiedSignals);
+            //Aqui ponemos todo lo de resumen
+            oResultModel.setProperty("/simulationName", fullRecord.SIMULATIONNAME);
+            oResultModel.setProperty("/symbol", fullRecord.SYMBOL);
+            oResultModel.setProperty("/startDate", fullRecord.STARTDATE);
+            oResultModel.setProperty("/endDate", fullRecord.ENDDATE);
+
+
+            const oSummary = fullRecord.SUMMARY;
+            oResultModel.setProperty("/FINAL_BALANCE", oSummary.FINAL_BALANCE);
+            oResultModel.setProperty("/FINAL_CASH", oSummary.FINAL_CASH);
+            oResultModel.setProperty("/FINAL_VALUE", oSummary.FINAL_VALUE);
+            oResultModel.setProperty("/REAL_PROFIT", oSummary.REAL_PROFIT);
+            oResultModel.setProperty("/REMAINING_UNITS", oSummary.REMAINING_UNITS);
+            oResultModel.setProperty("/TOTAL_BOUGHT_UNITS", oSummary.TOTAL_BOUGHT_UNITS);
+            oResultModel.setProperty("/TOTAL_SOLD_UNITS", oSummary.TOTAL_SOLDUNITS); // ojo con nombre diferente
+            oResultModel.setProperty("/PERCENTAGE_RETURN", oSummary.PERCENTAGE_RETURN);
+        },
+
+        _loadTableDataBySymbol: function (aApiData) {
+            const oResultModel = this.getView().getModel("strategyResultModel");
+
+            if (Array.isArray(aApiData)) {
+                // Formatear fechas
+                const dataWithFormattedDates = aApiData.map(item => ({
+                    ...item,
+                    DATE: item.DATE ? item.DATE.substring(0, 10) : "",
+                    DATE_GRAPH: item.DATE ? item.DATE.substring(0, 10) : "",
+                    BUY: item.BUY ? item.BUY : "",
+                    SELL: item.SELL ? item.SELL : "",
+                }));
+
+                const aPreparedData = this._prepareTableDataSaved(dataWithFormattedDates);
+                console.log(aPreparedData);
+                oResultModel.setProperty("/chart_data", aPreparedData);
+
+                this._addVizMeasures(dataWithFormattedDates);
+
+            } else {
+                oResultModel.setProperty("/chart_data", []);
+            }
+        },
+
+        _prepareTableDataSaved: function (aData) {
+            if (!Array.isArray(aData)) return [];
+
+            return aData.map(oItem => {
+
+                let shortMValue = null;
+                let longMValue = null;
+                let rsiValue = null;
+                let adxValue = null;
+                let maValue = null;
+                let atrValue = null;
+                let smaValue = null;
+
+                if (Array.isArray(oItem.INDICATORS)) {
+                    oItem.INDICATORS.forEach(ind => {
+                        switch (ind.INDICATOR) {
+                            case "short_ma":
+                                shortMValue = ind.VALUE;
+                                break;
+                            case "long_ma":
+                                longMValue = ind.VALUE;
+                                break;
+                            case "adx":
+                                adxValue = ind.VALUE;
+                                break;
+                            case "rsi":
+                                rsiValue = ind.VALUE;
+                                break;
+                            case "ma":
+                                maValue = ind.VALUE;
+                                break;
+                            case "atr":
+                                atrValue = ind.VALUE;
+                                break;
+                            case "sma":
+                                smaValue = ind.VALUE;
+                                break;
+                        }
+                    });
+                }
+                const dateIso = oItem.DATE || oItem.date; // puede ser uppercase o lowercase según el backend
+                console.log(oItem.SIGNALS?.[0]);
+                return {
+                    DATE: dateIso?.substring(0, 10), // para la tabla (YYYY-MM-DD)
+                    DATE_GRAPH: new Date(dateIso),   // para el gráfico (objeto Date)
+                    OPEN: oItem.OPEN ?? oItem.open,
+                    HIGH: oItem.HIGH ?? oItem.high,
+                    LOW: oItem.LOW ?? oItem.low,
+                    CLOSE: oItem.CLOSE ?? oItem.close,
+                    VOLUME: oItem.VOLUME ?? oItem.volume,
+                    SHORT_MA: oItem.SHORT_MA ?? shortMValue,
+                    LONG_MA: oItem.LONG_MA ?? longMValue,
+                    ADX: oItem.ADX ?? adxValue,
+                    RSI: oItem.RSI ?? rsiValue,
+                    MA: oItem.ADX ?? maValue,
+                    ATR: oItem.RSI ?? atrValue,
+                    SMA: oItem.RSI ?? smaValue,
+                    INDICATORS: Array.isArray(oItem.INDICATORS)
+                        ? oItem.INDICATORS.map(ind => `${ind.INDICATOR}: ${ind.VALUE.toFixed(2)}`).join(", ")
+                        : "",
+                    SIGNALS: oItem.SIGNALS,
+                    RULES: oItem.RULES,
+                    SHARES: oItem.SHARES,
+                    BUY_SIGNAL: oItem.BUY_SIGNAL,
+                    SELL: oItem.SIGNALS?.[0] === "sell" ? oItem.CLOSE : null,
+                    BUY: oItem.SIGNALS?.[0] === "buy" ? oItem.CLOSE : null
+
+
+
+                };
+            });
+        },
+
+        _addVizMeasures: function (aData) {
+            console.log(aData);
+
+            // 🔄 Preprocesar: convertir INDICATORS[] en propiedades directas
+            aData.forEach(dayItem => {
+                (dayItem.INDICATORS || []).forEach(ind => {
+                    const key = ind.INDICATOR.toUpperCase();
+                    dayItem[key] = ind.VALUE;
+                });
+            });
+
+            const oVizFrame = this.byId("idVizFrame");
+            const oDataset = oVizFrame.getDataset();
+
+            // 🧹 Limpia medidas y feeds existentes
+            oDataset.removeAllMeasures();
+            oVizFrame.removeAllFeeds();
+
+            // 📈 Definir medidas dinámicas según los datos
+            const aMeasures = [];
+
+            // Precio de cierre (siempre)
+            aMeasures.push(new sap.viz.ui5.data.MeasureDefinition({
+                name: "PrecioCierre",
+                value: "{strategyResultModel>CLOSE}"
+            }));
+
+            console.log(aData[0]);
+            // Agregar indicadores si existen
+            if ("SHORT_MA" in aData[0]) {
+                aMeasures.push(new sap.viz.ui5.data.MeasureDefinition({
+                    name: "ShortMA",
+                    value: "{strategyResultModel>SHORT_MA}"
+                }));
+            }
+
+            if ("LONG_MA" in aData[0]) {
+                aMeasures.push(new sap.viz.ui5.data.MeasureDefinition({
+                    name: "LongMA",
+                    value: "{strategyResultModel>LONG_MA}"
+                }));
+            }
+
+            if ("RSI" in aData[0]) {
+                aMeasures.push(new sap.viz.ui5.data.MeasureDefinition({
+                    name: "RSI",
+                    value: "{strategyResultModel>RSI}"
+                }));
+            }
+
+            if ("ADX" in aData[0]) {
+                aMeasures.push(new sap.viz.ui5.data.MeasureDefinition({
+                    name: "ADX",
+                    value: "{strategyResultModel>ADX}"
+                }));
+            }
+
+            if ("MA" in aData[0]) {
+                aMeasures.push(new sap.viz.ui5.data.MeasureDefinition({
+                    name: "MA",
+                    value: "{strategyResultModel>MA}"
+                }));
+            }
+
+            if ("ATR" in aData[0]) {
+                aMeasures.push(new sap.viz.ui5.data.MeasureDefinition({
+                    name: "ATR",
+                    value: "{strategyResultModel>ATR}"
+                }));
+            }
+            if ("SMA" in aData[0]) {
+                aMeasures.push(new sap.viz.ui5.data.MeasureDefinition({
+                    name: "SMA",
+                    value: "{strategyResultModel>SMA}"
+                }));
+            }
+
+            // Señales de compra/venta (opcional, si las agregas como números)
+
+
+            if ("BUY" in aData[0]) {
+                aMeasures.push(new sap.viz.ui5.data.MeasureDefinition({
+                    name: "Señal BUY",
+                    value: "{strategyResultModel>BUY}"
+                }));
+            }
+
+            if ("SELL" in aData[0]) {
+                aMeasures.push(new sap.viz.ui5.data.MeasureDefinition({
+                    name: "Señal SELL",
+                    value: "{strategyResultModel>SELL}"
+                }));
+            }
+
+
+            // 📌 Agrega todas las medidas al dataset
+            aMeasures.forEach(oMeasure => oDataset.addMeasure(oMeasure));
+
+            // 📊 Feeds para ejes
+            const oFeedValueAxis = new sap.viz.ui5.controls.common.feeds.FeedItem({
+                uid: "valueAxis",
+                type: "Measure",
+                values: aMeasures.map(m => m.getName())
+            });
+
+            const oFeedTimeAxis = new sap.viz.ui5.controls.common.feeds.FeedItem({
+                uid: "timeAxis",
+                type: "Dimension",
+                values: ["Fecha"]
+            });
+
+            oVizFrame.addFeed(oFeedTimeAxis);
+            oVizFrame.addFeed(oFeedValueAxis);
+            this._configureChart();
         },
 
         /**
