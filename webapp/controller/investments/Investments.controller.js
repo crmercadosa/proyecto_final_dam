@@ -785,6 +785,7 @@ sap.ui.define(
               // Signal points on chart (only show value if a signal exists)
               MA: ma,
               ATR: atr,
+              ADX: adx,
               BUY_SIGNAL:
                 signal.TYPE === "buy" ? parseFloat(oItem.CLOSE) : null,
               SELL_SIGNAL:
