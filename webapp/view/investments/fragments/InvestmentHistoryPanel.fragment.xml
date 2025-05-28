@@ -89,7 +89,11 @@
             <ScrollContainer height="80%" vertical="true" horizontal="false" width="100%">
                 <Table
                     id="historyTable"
+<<<<<<< HEAD
                     items="{historyModel>/strategies}"
+=======
+                    items="{historyModel>/values}"
+>>>>>>> personal/Alexiz
                     mode="{= ${historyModel>/isDeleteMode} ? 'MultiSelect' : 'SingleSelect' }"
                     growing="true"
                     growingThreshold="10"

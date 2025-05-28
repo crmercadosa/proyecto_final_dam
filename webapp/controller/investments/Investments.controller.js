@@ -85,41 +85,9 @@ sap.ui.define(
           );
 
           // 6. Initialize Investment History Model
-          this.getView().setModel(
-            new JSONModel({
-              strategies: [
-                {
-                  date: new Date(2024, 4, 15),
-                  strategyName: "Moving Average Crossover 1",
-                  symbol: "AAPL",
-                  result: 2500.5,
-                  status: "Completado",
-                },
-                {
-                  date: new Date(2024, 4, 16),
-                  strategyName: "Moving Average Crossover 2",
-                  symbol: "TSLA",
-                  result: -1200.3,
-                  status: "Completado",
-                },
-                {
-                  date: new Date(2024, 4, 17),
-                  strategyName: "Moving Average Crossover 3",
-                  symbol: "MSFT",
-                  result: 3400.8,
-                  status: "En Proceso",
-                },
-              ],
-              filteredCount: 0,
-              selectedCount: 0,
-              filters: {
-                dateRange: null,
-                investmentRange: [0, 10000],
-                profitRange: [-100, 100],
-              },
-            }),
-            "historyModel"
-          );
+          
+          //await this.loadSimulationsOnce("historyModel");
+          this.loadSimulationsOnce();
 
           // 7. Initialize Strategy Result Model
           var oStrategyResultModel = new JSONModel({
@@ -555,6 +523,49 @@ sap.ui.define(
               )
             : null;
         },
+
+      loadSimulationsOnce: async function () {
+      if (this._simulationsLoaded) return;
+
+      await this.loadSimulations("historyModel");
+      this._simulationsLoaded = true;
+    },
+
+    loadSimulations: async function (modelName) {
+    try {
+        const res = await fetch(`http://localhost:3333/api/inv/getallSimulations`);
+        const data = await res.json();
+        const simulationsWrapper = data.value || [];
+        const simulations = simulationsWrapper[0]?.simulations || [];
+
+        console.log("Simulaciones reales:", simulations);
+
+        const values = simulations.map(sim => ({
+          date: new Date(sim.STARTDATE),
+          strategyName: sim.SIMULATIONNAME,
+          symbol: sim.SYMBOL,
+          result: sim.SUMMARY?.FINAL_CASH ?? 0,
+          status: "Completado"
+        }));
+
+        this.getView().setModel(
+          new JSONModel({
+            values,
+            filteredCount: 0,
+            selectedCount: 0,
+            filters: {
+              dateRange: null,
+              investmentRange: [0, 10000],
+              profitRange: [-100, 100],
+            },
+          }),
+          modelName
+        );
+
+      } catch (e) {
+        console.error("Error cargando simulaciones ", e);
+      }
+    },
 
         /**
          * Helper function to format the count of signals by type.
