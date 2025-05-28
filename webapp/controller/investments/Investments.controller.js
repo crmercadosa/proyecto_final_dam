@@ -1,3 +1,4 @@
+/* eslint-disable complexity */
 // @ts-nocheck
 /* eslint-disable no-console */
 sap.ui.define(
@@ -525,11 +526,11 @@ sap.ui.define(
         },
 
       loadSimulationsOnce: async function () {
-      if (this._simulationsLoaded) return;
+        if (this._simulationsLoaded) return;
 
-      await this.loadSimulations("historyModel");
-      this._simulationsLoaded = true;
-    },
+        await this.loadSimulations("historyModel");
+        this._simulationsLoaded = true;
+      },
 
     loadSimulations: async function (modelName) {
     try {

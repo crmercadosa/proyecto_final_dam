@@ -1,3 +1,4 @@
+// @ts-nocheck
 /* eslint-disable valid-jsdoc */
 /* eslint-disable linebreak-style */
 /* eslint-disable no-console */
@@ -26,6 +27,11 @@ sap.ui.define([
         filterKey: "active"
       });
       this.getView().setModel(oViewModel, "viewModel");
+
+      const oUIModel = new JSONModel({
+          rowMode: "Fixed" // Opciones: Fixed | Interactive
+      });
+      this.getView().setModel(oUIModel, "ui");
 
       this._catalogsLoaded = false;
       this.selectedRole = null;

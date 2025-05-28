@@ -25,6 +25,7 @@ sap.ui.define([
             var oViewModel = new JSONModel({
                 buttonsEnabled: false
             });
+            
             this.getView().setModel(oViewModel, "viewModel");
             //
             // Modelo para RowMode UI
