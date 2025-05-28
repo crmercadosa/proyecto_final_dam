@@ -188,11 +188,11 @@
 
                         <Label
                             class="sapUiTinyMarginTop"
-                            text="LONG EMA"
+                            text="SMA LARGA"
                             visible="{= ${strategyAnalysisModel>/strategyKey} === 'Momentum' }"
                         />
                         <StepInput
-                            value="{strategyAnalysisModel>/LONG}"
+                            value="{strategyAnalysisModel>/long_sma}"
                             min="1"
                             step="10"
                             width="100%"
@@ -202,11 +202,11 @@
 
                         <Label
                             class="sapUiTinyMarginTop"
-                            text="SHORT EMA"
+                            text="SMA CORTA"
                             visible="{= ${strategyAnalysisModel>/strategyKey} === 'Momentum' }"
                         />
                         <StepInput
-                            value="{strategyAnalysisModel>/SHORT}"
+                            value="{strategyAnalysisModel>/short_sma}"
                             min="1"
                             step="1"
                             width="100%"
@@ -220,7 +220,7 @@
                             visible="{= ${strategyAnalysisModel>/strategyKey} === 'Momentum' }"
                         />
                         <StepInput
-                            value="{strategyAnalysisModel>/ADX}"
+                            value="{strategyAnalysisModel>/adx}"
                             min="1"
                             step="1"
                             width="100%"
@@ -234,7 +234,7 @@
                             visible="{= ${strategyAnalysisModel>/strategyKey} === 'Momentum' }"
                         />
                         <StepInput
-                            value="{strategyAnalysisModel>/RSI}"
+                            value="{strategyAnalysisModel>/rsi_m}"
                             min="1"
                             step="1"
                             width="100%"

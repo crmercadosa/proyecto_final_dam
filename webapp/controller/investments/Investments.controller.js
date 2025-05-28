@@ -189,8 +189,8 @@ sap.ui.define(
               { key: "", text: "No i18n: Seleccione..." },
               { key: "MACrossover", text: "No i18n: Cruce Medias..." },
               { key: "Reversión Simple", text: "No i18n: Reversion Simple..." },
-              { key: "Supertrend", text: "No i18n: Supertrend"},
-              { key: "Momentum", text: "No i18n: Momentum" }
+              { key: "Supertrend", text: "No i18n: Supertrend..."},
+              { key: "Momentum", text: "No i18n: Momentum..." }
             ]);
           }
 
@@ -467,19 +467,19 @@ sap.ui.define(
             SPECS = [
               {
                 INDICATOR: "LONG",  
-                VALUE: oStrategyModel.getProperty("/LONG"),
+                VALUE: oStrategyModel.getProperty("/long_sma"),
               },
               {
                 INDICATOR: "SHORT",
-                VALUE: oStrategyModel.getProperty("/SHORT"),
+                VALUE: oStrategyModel.getProperty("/short_sma"),
               },
               {
                 INDICATOR: "ADX",
-                VALUE: oStrategyModel.getProperty("/ADX"),
+                VALUE: oStrategyModel.getProperty("/adx"),
               },
               {
                 INDICATOR: "RSI",
-                VALUE: oStrategyModel.getProperty("/RSI"),
+                VALUE: oStrategyModel.getProperty("/rsi_m"),
               }
             ];
           }
@@ -832,7 +832,7 @@ sap.ui.define(
           } else if( sStrategyKey === "Supertrend") {
             aMeasures.push("MA","ATR");
           } else if (sStrategyKey === "Momentum") {
-            aMeasures.push("LONG", "SHORT", "ADX", "RSI");
+            aMeasures.push("LONG_MA", "SHORT_MA", "ADX", "RSI");
           }
 
 

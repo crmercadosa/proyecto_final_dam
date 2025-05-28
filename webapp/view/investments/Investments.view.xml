@@ -261,14 +261,6 @@
                                                         value="{ATR}"
                                                     />
                                                     <viz.data:MeasureDefinition
-                                                        name="LONG"
-                                                        value="{LONG}"
-                                                    />
-                                                    <viz.data:MeasureDefinition
-                                                        name="SHORT"
-                                                        value="{SHORT}"
-                                                    />
-                                                    <viz.data:MeasureDefinition
                                                         name="ADX"
                                                         value="{ADX}"
                                                     />
