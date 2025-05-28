@@ -26,7 +26,7 @@
         <layoutData>
           <layout:SplitterLayoutData size="30%" minSize="25%" resizable="true" />
         </layoutData>
-        <mvc:XMLView viewName="com.invertions.sapfiorimodinv.view.security.RolesDetail" />
+        <mvc:XMLView id="rolesDetailView" viewName="com.invertions.sapfiorimodinv.view.security.RolesDetail" />
       </VBox>
 
 

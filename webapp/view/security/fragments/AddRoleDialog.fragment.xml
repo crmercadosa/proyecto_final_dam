@@ -1,5 +1,5 @@
 <m:Dialog
-            id="dialogAddRole"
+            id="addRoleDialog"
             title="Crear Rol"
             draggable="true"
             resizable="true"
