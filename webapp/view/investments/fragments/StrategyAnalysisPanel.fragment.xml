@@ -188,6 +188,62 @@
 
                         <Label
                             class="sapUiTinyMarginTop"
+                            text="LONG EMA"
+                            visible="{= ${strategyAnalysisModel>/strategyKey} === 'Momentum' }"
+                        />
+                        <StepInput
+                            value="{strategyAnalysisModel>/LONG}"
+                            min="1"
+                            step="10"
+                            width="100%"
+                            class=""
+                            visible="{= ${strategyAnalysisModel>/strategyKey} === 'Momentum' }"
+                        />
+
+                        <Label
+                            class="sapUiTinyMarginTop"
+                            text="SHORT EMA"
+                            visible="{= ${strategyAnalysisModel>/strategyKey} === 'Momentum' }"
+                        />
+                        <StepInput
+                            value="{strategyAnalysisModel>/SHORT}"
+                            min="1"
+                            step="1"
+                            width="100%"
+                            class=""
+                            visible="{= ${strategyAnalysisModel>/strategyKey} === 'Momentum' }"
+                        />
+
+                        <Label
+                            class="sapUiTinyMarginTop"
+                            text="ADX"
+                            visible="{= ${strategyAnalysisModel>/strategyKey} === 'Momentum' }"
+                        />
+                        <StepInput
+                            value="{strategyAnalysisModel>/ADX}"
+                            min="1"
+                            step="1"
+                            width="100%"
+                            class=""
+                            visible="{= ${strategyAnalysisModel>/strategyKey} === 'Momentum' }"
+                        />
+                        
+                        <Label
+                            class="sapUiTinyMarginTop"
+                            text="RSI Simple"
+                            visible="{= ${strategyAnalysisModel>/strategyKey} === 'Momentum' }"
+                        />
+                        <StepInput
+                            value="{strategyAnalysisModel>/RSI}"
+                            min="1"
+                            step="1"
+                            width="100%"
+                            class=""
+                            visible="{= ${strategyAnalysisModel>/strategyKey} === 'Momentum' }"
+                        />
+
+                        <Label
+                            class="sapUiTinyMarginTop"
                             text="Cantidad de dinero a invertir"
                         />
                         <StepInput

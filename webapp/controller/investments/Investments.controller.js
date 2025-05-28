@@ -1,3 +1,6 @@
+/* eslint-disable curly */
+/* eslint-disable fiori-custom/sap-no-localhost */
+/* eslint-disable fiori-custom/sap-no-hardcoded-url */
 /* eslint-disable complexity */
 // @ts-nocheck
 /* eslint-disable no-console */
@@ -72,7 +75,8 @@ sap.ui.define(
               { key: "", text: "Cargando textos..." }, // Placeholder for i18n
               { key: "MACrossover", text: "Cargando textos..." },
               { key: "Reversión Simple", text: "Cargando textos..." },
-              { key: "Supertrend", text: "Cargando textos..."}
+              { key: "Supertrend", text: "Cargando textos..."},
+              { key: "Momentum", text: "Cargando textos..."}
             ],
             // IMPORTANT: Initialize as an ARRAY of strings for VizFrame FeedItem
             chartMeasuresFeed: ["PrecioCierre", "Señal BUY", "Señal SELL"],
@@ -154,6 +158,12 @@ sap.ui.define(
                     text: this._oResourceBundle.getText(
                       "movingAverageSupertrendStrategy"
                     ),
+                  },
+                  {
+                    key: "Momentum",
+                    text: this._oResourceBundle.getText(
+                      "movingAverageMomentumStrategy"
+                    )
                   }
                 ]);
                 console.log("Textos de i18n cargados correctamente.");
@@ -165,10 +175,9 @@ sap.ui.define(
               oStrategyAnalysisModel.setProperty("/strategies", [
                 { key: "", text: "Error i18n: Seleccione..." },
                 { key: "MACrossover", text: "Error i18n: Cruce Medias..." },
-                {
-                  key: "Reversión Simple",
-                  text: "Error i18n: Reversion Simple...",
-                },
+                { key: "Reversión Simple", text: "Error i18n: Reversion Simple..."},
+                { key: "Supertrend", text: "Error i18n: Supertrend..." },
+                { key: "Momentum", text: "Error i18n: Momentum..." }
               ]);
             }
           } else {
@@ -179,7 +188,8 @@ sap.ui.define(
               { key: "", text: "No i18n: Seleccione..." },
               { key: "MACrossover", text: "No i18n: Cruce Medias..." },
               { key: "Reversión Simple", text: "No i18n: Reversion Simple..." },
-              { key: "Supertrend", text: "No i18n: Supertrend"}
+              { key: "Supertrend", text: "No i18n: Supertrend"},
+              { key: "Momentum", text: "No i18n: Momentum" }
             ]);
           }
 
@@ -225,16 +235,24 @@ sap.ui.define(
          * @private
          */
         _initSymbolModel: function () {
-          const oSymbolModel = new JSONModel({
-            symbols: [
-              { symbol: "TSLA", name: "Tesla" },
-              { symbol: "AAPL", name: "Apple" },
-              { symbol: "MSFT", name: "Microsoft" },
-              { symbol: "IBM", name: "IBM" },
-            ],
+        const oView = this.getView();
+
+        // Reemplaza esta URL por la de tu API real
+        fetch("http://localhost:3333/api/inv/companys?type=local")
+          .then(response => response.json())
+          .then(data => {
+            const oSymbolModel = new JSONModel({
+              symbols: data.value.map(company => ({
+                symbol: company.symbol,
+                name: company.name
+              }))
+            });
+            oView.setModel(oSymbolModel, "symbolModel");
+          })
+          .catch(error => {
+            console.error("Error loading symbol data:", error);
           });
-          this.getView().setModel(oSymbolModel, "symbolModel");
-        },
+      },
 
         /**
          * Configures the properties of the VizFrame.
@@ -375,6 +393,10 @@ sap.ui.define(
             apiStrategyName = "reversionsimple";
           }else if (strategy === "Supertrend"){
             apiStrategyName = "supertrend";
+          }else if (strategy === "Macrossover") {
+            apiStrategyName = "macrossover";
+          } else if (strategy === "Momentum") {
+            apiStrategyName = "momentum";
           }
 
           var SPECS = []; // Initialize as array
@@ -387,7 +409,7 @@ sap.ui.define(
                 VALUE: rsi,
               },
             ];
-          } else if(strategy === "supertrend"){
+          } else if(apiStrategyName === "supertrend"){
                         SPECS = [
               {
                 INDICATOR: "ma_length",
@@ -406,8 +428,7 @@ sap.ui.define(
                 VALUE: oStrategyModel.getProperty("/rr"), // Asegúrate de que el tipo de dato sea correcto
               },
             ];
-          }
-           else {
+          } else if (apiStrategyName === "macrossover") {
             // Default for MACrossover or any other strategy
             SPECS = [
               {
@@ -417,7 +438,26 @@ sap.ui.define(
               {
                 INDICATOR: "LONG_MA",
                 VALUE: oStrategyModel.getProperty("/longSMA"),
+              }
+            ];
+          } else if (apiStrategyName === "momentum") {
+            SPECS = [
+              {
+                INDICATOR: "LONG",  
+                VALUE: oStrategyModel.getProperty("/LONG"),
               },
+              {
+                INDICATOR: "SHORT",
+                VALUE: oStrategyModel.getProperty("/SHORT"),
+              },
+              {
+                INDICATOR: "ADX",
+                VALUE: oStrategyModel.getProperty("/ADX"),
+              },
+              {
+                INDICATOR: "RSI",
+                VALUE: oStrategyModel.getProperty("/RSI"),
+              }
             ];
           }
 
@@ -525,43 +565,37 @@ sap.ui.define(
             : null;
         },
 
-      loadSimulationsOnce: async function () {
-        if (this._simulationsLoaded) return;
+        loadSimulationsOnce: async function () {
+          if (this._simulationsLoaded) return;
 
-        await this.loadSimulations("historyModel");
-        this._simulationsLoaded = true;
-      },
+          await this.loadSimulations("historyModel");
+          this._simulationsLoaded = true;
+        },
 
-    loadSimulations: async function (modelName) {
-    try {
-        const res = await fetch(`http://localhost:3333/api/inv/getallSimulations`);
-        const data = await res.json();
-        const simulationsWrapper = data.value || [];
-        const simulations = simulationsWrapper[0]?.simulations || [];
+        loadSimulations: async function (modelName) {
+        try {
+            const res = await fetch("http://localhost:3333/api/inv/getallSimulations");
+            const data = await res.json();
+            const simulationsWrapper = data.value || [];
+            const simulations = simulationsWrapper[0]?.simulations || [];
 
-        console.log("Simulaciones reales:", simulations);
+            console.log("Simulaciones reales:", simulations);
 
-        const values = simulations.map(sim => ({
-          date: new Date(sim.STARTDATE),
-          strategyName: sim.SIMULATIONNAME,
-          symbol: sim.SYMBOL,
-          result: sim.SUMMARY?.FINAL_CASH ?? 0,
-          status: "Completado"
-        }));
+            const values = simulations.map(sim => ({
+              simulationName: sim.SIMULATIONNAME,
+              strategyName: sim.STRATEGYID,
+              symbol: sim.SYMBOL,
+              rangeDate: `${new Date(sim.STARTDATE).toISOString().slice(0,10)} - ${new Date(sim.ENDDATE).toISOString().slice(0,10)}`,
+              result: sim.SUMMARY?.REAL_PROFIT ?? 0
+            }));
 
-        this.getView().setModel(
-          new JSONModel({
-            values,
-            filteredCount: 0,
-            selectedCount: 0,
-            filters: {
-              dateRange: null,
-              investmentRange: [0, 10000],
-              profitRange: [-100, 100],
-            },
-          }),
-          modelName
-        );
+            this.getView().setModel(
+              new JSONModel({
+                values,
+                filteredCount: Number(simulations.length)
+              }),
+              modelName
+            );
 
       } catch (e) {
         console.error("Error cargando simulaciones ", e);
@@ -767,7 +801,10 @@ sap.ui.define(
             aMeasures.push("RSI", "SMA"); // Estos nombres coinciden en tu XML
           } else if( sStrategyKey === "Supertrend") {
             aMeasures.push("MA","ATR");
+          } else if (sStrategyKey === "Momentum") {
+            aMeasures.push("LONG", "SHORT", "ADX", "RSI");
           }
+
 
           // Actualiza la propiedad del modelo con las medidas actuales
           oStrategyAnalysisModel.setProperty("/chartMeasuresFeed", aMeasures);

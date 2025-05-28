@@ -100,7 +100,7 @@
                             <Text text="Nombre"/>
                         </Column>
                         <Column width="20%" minScreenWidth="Tablet" demandPopin="true">
-                            <Text text="Estrategia"/>
+                            <Text text="EstrategiaID"/>
                         </Column>
                         <Column width="20%" minScreenWidth="Tablet" demandPopin="true">
                             <Text text="Rango"/>
@@ -117,20 +117,16 @@
                         <ColumnListItem type="Active">
                             <cells>
                                 <Input
-                                    value="{historyModel>strategyName}"
+                                    value="{historyModel>simulationName}"
                                     editable="true"
-                                    liveChange=".onStrategyNameChange"
-                                    submit=".onStrategyNameSubmit"
+                                    liveChange=".onSimulationNameChange"
+                                    submit=".onSimulationNameSubmit"
                                     tooltip="Click para editar"/>
                                 <Text text="{
-                                    path: 'historyModel>details/STRATEGY'
+                                    path: 'historyModel>strategyName'
                                 }"/>
                                 <Text text="{
-                                    parts: [
-                                        {path: 'historyModel>details/STARTDATE'},
-                                        {path: 'historyModel>details/ENDDATE'}
-                                    ],
-                                    formatter: '.formatDateRange'
+                                    path: 'historyModel>rangeDate'
                                 }"/>
                                 <Text text="{historyModel>symbol}"/>
                                 <ObjectNumber
