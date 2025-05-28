@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable curly */
 /* eslint-disable fiori-custom/sap-no-localhost */
 /* eslint-disable fiori-custom/sap-no-hardcoded-url */
@@ -39,7 +40,7 @@ sap.ui.define(
          * Initializes models, sets default dates, and configures event delegates.
          */
         onInit: function () {
-          // 1. Initialize Symbol Model (static data for now)
+          // 1. Initialize Symbol Model
           this._initSymbolModel();
 
           // 2. Initialize Price Data Model (empty for now)
@@ -231,28 +232,49 @@ sap.ui.define(
         },
 
         /**
+         * Initializes the symbol model with data on the mongo's collection.
+         * @private
+         */
+        // _initSymbolModel: function () {
+        //   const oView = this.getView();
+        //   fetch("http://localhost:3333/api/inv/companys?type=local")
+        //     .then(response => response.json())
+        //     .then(data => {
+        //       const oSymbolModel = new JSONModel({
+        //         symbols: data.value.map(company => ({
+        //           symbol: company.symbol,
+        //           name: company.name
+        //         }))
+        //       });
+        //       oView.setModel(oSymbolModel, "symbolModel");
+        //     })
+        //     .catch(error => {
+        //       console.error("Error loading symbol data:", error);
+        //     });
+        // },
+
+                /**
          * Initializes the symbol model with static data.
          * @private
          */
         _initSymbolModel: function () {
-        const oView = this.getView();
-
-        // Reemplaza esta URL por la de tu API real
-        fetch("http://localhost:3333/api/inv/companys?type=local")
-          .then(response => response.json())
-          .then(data => {
-            const oSymbolModel = new JSONModel({
-              symbols: data.value.map(company => ({
-                symbol: company.symbol,
-                name: company.name
-              }))
-            });
-            oView.setModel(oSymbolModel, "symbolModel");
-          })
-          .catch(error => {
-            console.error("Error loading symbol data:", error);
+          const oView = this.getView();
+          const oSymbolModel = new JSONModel({
+            symbols: [
+              { symbol: "AAPL", name: "Apple Inc." },
+              { symbol: "GOOGL", name: "Alphabet Inc." },
+              { symbol: "AMZN", name: "Amazon.com Inc." },
+              { symbol: "MSFT", name: "Microsoft Corporation" },
+              { symbol: "TSLA", name: "Tesla Inc." },
+              { symbol: "FB", name: "Meta Platforms Inc." },
+              { symbol: "NFLX", name: "Netflix Inc." },
+              { symbol: "NVDA", name: "NVIDIA Corporation" },
+            ]
           });
-      },
+          oView.setModel(oSymbolModel, "symbolModel");
+        },
+
+        
 
         /**
          * Configures the properties of the VizFrame.
@@ -410,7 +432,7 @@ sap.ui.define(
               },
             ];
           } else if(apiStrategyName === "supertrend"){
-                        SPECS = [
+            SPECS = [
               {
                 INDICATOR: "ma_length",
                 VALUE: oStrategyModel.getProperty("/ma_length"), // Asegúrate de que el tipo de dato sea correcto (número si lo esperas como número)
@@ -471,7 +493,7 @@ sap.ui.define(
               ),
               ENDDATE: this.formatDate(oStrategyModel.getProperty("/endDate")), // Usar el formateador público
               AMOUNT: oStrategyModel.getProperty("/stock"),
-              USERID: "ARAMIS", // Assuming a fixed user ID for now
+              USERID: "CRMERCADOSA", // Assuming a fixed user ID for now
               SPECS: SPECS,
             },
           };
@@ -687,6 +709,7 @@ sap.ui.define(
             let sma = null; // Variable para la SMA simple
             let ma = null;
             let atr = null;
+            let adx = null;
             if (Array.isArray(oItem.INDICATORS)) {
               oItem.INDICATORS.forEach((indicator) => {
                 // Asegúrate de que estos nombres coincidan EXACTAMENTE con lo que tu API devuelve
@@ -703,11 +726,13 @@ sap.ui.define(
                 } else if (indicator.INDICATOR === "ma") {
                   // Nuevo indicador para longitud de MA
                   ma = parseFloat(indicator.VALUE);
-                } 
-                else if (indicator.INDICATOR === "atr") {
+                } else if (indicator.INDICATOR === "atr") {
                   // Nuevo indicador para ATR
                   atr = parseFloat(indicator.VALUE);
-                } 
+                } else if (indicator.INDICATOR === "adx") {
+                  // Nuevo indicador para ADX
+                  adx = parseFloat(indicator.VALUE);
+                }
               });
             }
 
@@ -731,6 +756,9 @@ sap.ui.define(
             }
             if (atr !== null && !isNaN(atr)) {
               indicatorParts.push(`ATR: ${atr.toFixed(2)}`); // Formatear a 2 decimales
+            }
+            if (adx !== null && !isNaN(adx)) {
+              indicatorParts.push(`ADX: ${adx.toFixed(2)}`); // Formatear a 2 decimales
             }
 
             const indicatorsText =
