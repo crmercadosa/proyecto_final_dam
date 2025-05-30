@@ -73,6 +73,14 @@
                             <layoutData>
                                 <FlexItemData growFactor="1" />
                             </layoutData>
+                            <Toolbar >
+                                <SearchField 
+                                    id="SearchDataField" 
+                                    width="25rem"
+                                    placeholder="Buscar por cualquier campo..."
+                                    liveChange="onSearchData" 
+                                />
+                            </Toolbar>
                             <ScrollContainer
                                 height="550px"
                                 vertical="true"
@@ -80,6 +88,7 @@
                                 width="100%"
                             >
                                 <Table
+                                    id="ResultdataTable"
                                     items="{strategyResultModel>/chart_data}"
                                     width="100%"
                                     growing="true"
@@ -113,8 +122,8 @@
                                         <Column>
                                             <Text text="Signals" />
                                         </Column>
-                                        <Column>
-                                            <Text text="Rules" />
+                                        <Column width="300px" >
+                                            <Text text="Rules" class="centeredText" />
                                         </Column>
                                         <Column>
                                             <Text text="Shares" />

@@ -235,44 +235,44 @@ sap.ui.define(
          * Initializes the symbol model with data on the mongo's collection.
          * @private
          */
-        // _initSymbolModel: function () {
-        //   const oView = this.getView();
-        //   fetch("http://localhost:3333/api/inv/companys?type=local")
-        //     .then(response => response.json())
-        //     .then(data => {
-        //       const oSymbolModel = new JSONModel({
-        //         symbols: data.value.map(company => ({
-        //           symbol: company.symbol,
-        //           name: company.name
-        //         }))
-        //       });
-        //       oView.setModel(oSymbolModel, "symbolModel");
-        //     })
-        //     .catch(error => {
-        //       console.error("Error loading symbol data:", error);
-        //     });
-        // },
+        _initSymbolModel: function () {
+          const oView = this.getView();
+          fetch("http://localhost:3333/api/inv/companys?type=local")
+            .then(response => response.json())
+            .then(data => {
+              const oSymbolModel = new JSONModel({
+                symbols: data.value.map(company => ({
+                  symbol: company.symbol,
+                  name: company.name
+                }))
+              });
+              oView.setModel(oSymbolModel, "symbolModel");
+            })
+            .catch(error => {
+              console.error("Error loading symbol data:", error);
+            });
+        },
 
                 /**
          * Initializes the symbol model with static data.
          * @private
          */
-        _initSymbolModel: function () {
-          const oView = this.getView();
-          const oSymbolModel = new JSONModel({
-            symbols: [
-              { symbol: "AAPL", name: "Apple Inc." },
-              { symbol: "GOOGL", name: "Alphabet Inc." },
-              { symbol: "AMZN", name: "Amazon.com Inc." },
-              { symbol: "MSFT", name: "Microsoft Corporation" },
-              { symbol: "TSLA", name: "Tesla Inc." },
-              { symbol: "FB", name: "Meta Platforms Inc." },
-              { symbol: "NFLX", name: "Netflix Inc." },
-              { symbol: "NVDA", name: "NVIDIA Corporation" },
-            ]
-          });
-          oView.setModel(oSymbolModel, "symbolModel");
-        },
+        // _initSymbolModel: function () {
+        //   const oView = this.getView();
+        //   const oSymbolModel = new JSONModel({
+        //     symbols: [
+        //       { symbol: "AAPL", name: "Apple Inc." },
+        //       { symbol: "GOOGL", name: "Alphabet Inc." },
+        //       { symbol: "AMZN", name: "Amazon.com Inc." },
+        //       { symbol: "MSFT", name: "Microsoft Corporation" },
+        //       { symbol: "TSLA", name: "Tesla Inc." },
+        //       { symbol: "FB", name: "Meta Platforms Inc." },
+        //       { symbol: "NFLX", name: "Netflix Inc." },
+        //       { symbol: "NVDA", name: "NVIDIA Corporation" },
+        //     ]
+        //   });
+        //   oView.setModel(oSymbolModel, "symbolModel");
+        // },
 
 
 
@@ -522,7 +522,7 @@ sap.ui.define(
               );
               const aSignals = data.value?.[0]?.SIGNALS || [];
               const oSummary = data.value?.[0]?.SUMMARY || {}; // Obtener el objeto SUMMARY
-
+              const simData = data.value?.[0] || [];
               // Update result model with transformed data for chart and table
               oResultModel.setData({
                 hasResults: true,
@@ -546,6 +546,30 @@ sap.ui.define(
                 REAL_PROFIT: oSummary.REAL_PROFIT || 0,
                 PERCENTAGE_RETURN: oSummary.PERCENTAGE_RETURN || 0,
               });
+
+              const oHistoryModel = this.getView().getModel("historyModel");
+
+              // Obtener los datos actuales
+              const aValues = oHistoryModel.getProperty("/values") || [];
+
+              // Crear el nuevo objeto formateado igual que en loadSimulations
+              const newValue = {
+                simulationName: simData.SIMULATIONNAME,
+                strategyName: simData.STRATEGYID,
+                symbol: simData.SYMBOL,
+                rangeDate: `${new Date(simData.STARTDATE).toISOString().slice(0, 10)} - ${new Date(simData.ENDDATE).toISOString().slice(0, 10)}`,
+                result: oSummary.REAL_PROFIT ?? 0,
+                _fullRecord: simData
+              };
+
+              // Agregar el nuevo valor al array
+              aValues.push(newValue);
+
+              // Actualizar el modelo
+              oHistoryModel.setProperty("/values", aValues);
+
+              // Actualizar el contador de simulaciones encontradas
+              oHistoryModel.setProperty("/filteredCount", aValues.length);
 
               // After new data is loaded, ensure chart feeds are updated based on current strategy
               // Esto es crucial para que el gráfico se actualice correctamente con las medidas de la nueva estrategia
@@ -594,6 +618,44 @@ sap.ui.define(
             this._simulationsLoaded = true;
         },
 
+        onSearchData: function(oEvent) {
+            const sQuery = oEvent.getParameter("newValue").trim();
+            const oTable = this.byId("ResultdataTable");
+            const oBinding = oTable.getBinding("items");
+
+            if (!oBinding) {
+                return;
+            }
+
+            if (sQuery.length > 0) {
+                const aFilters = [];
+
+                // Campos texto
+                ["DATE", "INDICATORS", "SIGNALS", "RULES"].forEach(function(field) {
+                    aFilters.push(new sap.ui.model.Filter(field, sap.ui.model.FilterOperator.Contains, sQuery));
+                });
+
+                // Campos numéricos
+                if (!isNaN(sQuery)) {
+                    const nQuery = Number(sQuery);
+                    ["OPEN", "HIGH", "LOW", "CLOSE", "VOLUME", "SHARES"].forEach(function(field) {
+                        aFilters.push(new sap.ui.model.Filter(field, sap.ui.model.FilterOperator.EQ, nQuery));
+                    });
+                }
+
+                const oFilter = new sap.ui.model.Filter({
+                    filters: aFilters,
+                    and: false
+                });
+
+                oBinding.filter(oFilter);
+            } else {
+                oBinding.filter([]);
+            }
+        },
+
+
+
         loadSimulations: async function (modelName) {
             try {
                 const res = await fetch("http://localhost:3333/api/inv/getallSimulations");
@@ -615,7 +677,10 @@ sap.ui.define(
                 this.getView().setModel(
                   new JSONModel({
                     values,
-                    filteredCount: Number(simulations.length)
+                    filteredValues: values, // para mostrar inicialmente todos
+                    filteredCount: values.length,
+                    isDeleteMode: false,
+                    selectedCount: 0
                   }),
                   modelName
                 );
@@ -967,6 +1032,53 @@ sap.ui.define(
             }
         },
 
+        onSearch: function (oEvent) {
+          const sQuery = oEvent.getParameter("query")?.toLowerCase() || "";
+          const oModel = this.getView().getModel("historyModel");
+          const aAllValues = oModel.getProperty("/values") || [];
+          // Si no hay búsqueda, restablece el filtrado original
+          if (!sQuery) {
+            oModel.setProperty("/filteredValues", aAllValues);
+            oModel.setProperty("/filteredCount", aAllValues.length);
+            return;
+          }
+          const aFiltered = aAllValues.filter(item => {
+          return (
+            item.simulationName?.toLowerCase().includes(sQuery) ||
+            item.strategyName?.toLowerCase().includes(sQuery) ||
+            item.symbol?.toLowerCase().includes(sQuery) ||
+            item.rangeDate?.toLowerCase().includes(sQuery) ||
+            String(item.result).includes(sQuery)
+            );
+          });
+          oModel.setProperty("/filteredValues", aFiltered);
+          oModel.setProperty("/filteredCount", aFiltered.length);
+        },
+        
+        onFilterDateChange: function (oEvent) {
+          const oView = this.getView();
+          const oModel = oView.getModel("historyModel");
+          const aAllValues = oModel.getProperty("/values");
+
+          const oDateRange = sap.ui.core.Fragment.byId("myFragmentId", "dateRangeFilter");
+          const oDateFrom = oDateRange.getDateValue();  // Fecha inicio
+          const oDateTo = oDateRange.getSecondDateValue(); // Fecha fin
+
+          const aFiltered = aAllValues.filter(item => {
+            const simStart = new Date(item._fullRecord.STARTDATE);
+            const simEnd = new Date(item._fullRecord.ENDDATE);
+
+            if (oDateFrom && simStart < oDateFrom) return false;
+            if (oDateTo && simEnd > oDateTo) return false;
+
+            return true;
+          });
+
+          oModel.setProperty("/filteredValues", aFiltered);
+          oModel.setProperty("/filteredCount", aFiltered.length);
+        },
+
+
         onLoadStrategy: function () {
             const oTable = sap.ui.core.Fragment.byId("myFragmentId", "historyTable");
             const oSelectedItem = oTable.getSelectedItem();
@@ -1257,17 +1369,76 @@ sap.ui.define(
         /**
          * Toggles the visibility of advanced filters in the history popover.
          */
-        onToggleAdvancedFilters: function () {
-          if (!this._oHistoryPopover) {return;}
+        onToggleRangeDateFilter: function () {
+          const oPanelDates = sap.ui.core.Fragment.byId("myFragmentId", "rangeDatesFilter");
+          const oPanelInv = sap.ui.core.Fragment.byId("myFragmentId", "rangeInversionFilter");
+          const oPanelRent = sap.ui.core.Fragment.byId("myFragmentId", "rangeRentFilter");
 
-          const oPanel = sap.ui.getCore().byId("advancedFiltersPanel"); // Access panel from core if it's not a direct child of the view
+          if (!oPanelDates || !oPanelInv || !oPanelRent) {
+            console.warn("Alguno de los paneles no fue encontrado.");
+            return;
+          }
 
-          if (oPanel) {
-            oPanel.setVisible(!oPanel.getVisible());
-          } else {
-            console.warn("Advanced filters panel not found.");
+          const bCurrentVisible = oPanelDates.getVisible(); // Ver si está visible actualmente
+
+          // Cierra todos
+          oPanelDates.setVisible(false);
+          oPanelInv.setVisible(false);
+          oPanelRent.setVisible(false);
+
+          // Abre solo si estaba oculto
+          if (!bCurrentVisible) {
+            oPanelDates.setVisible(true);
           }
         },
+
+
+        onToggleRangeInversionFilter: function () {
+          const oPanelInv = sap.ui.core.Fragment.byId("myFragmentId", "rangeInversionFilter");
+          const oPanelDates = sap.ui.core.Fragment.byId("myFragmentId", "rangeDatesFilter");
+          const oPanelRent = sap.ui.core.Fragment.byId("myFragmentId", "rangeRentFilter");
+
+          if (!oPanelInv || !oPanelDates || !oPanelRent) {
+            console.warn("Alguno de los paneles no fue encontrado");
+            return;
+          }
+
+          const bCurrentVisible = oPanelInv.getVisible(); // Guarda visibilidad actual
+
+          // Cierra todos los paneles
+          oPanelInv.setVisible(false);
+          oPanelDates.setVisible(false);
+          oPanelRent.setVisible(false);
+
+          // Solo vuelve a abrir si estaba cerrado
+          if (!bCurrentVisible) {
+            oPanelInv.setVisible(true);
+          }
+        },
+
+        onToggleRangeRentFilter: function () {
+          const oPanelRent = sap.ui.core.Fragment.byId("myFragmentId", "rangeRentFilter");
+          const oPanelDates = sap.ui.core.Fragment.byId("myFragmentId", "rangeDatesFilter");
+          const oPanelInv = sap.ui.core.Fragment.byId("myFragmentId", "rangeInversionFilter");
+
+          if (!oPanelRent || !oPanelDates || !oPanelInv) {
+            console.warn("Alguno de los paneles no fue encontrado");
+            return;
+          }
+
+          const bCurrentVisible = oPanelRent.getVisible(); // guarda el estado actual
+
+          // Cerrar todos
+          oPanelRent.setVisible(false);
+          oPanelDates.setVisible(false);
+          oPanelInv.setVisible(false);
+
+          // Solo abrir el panel rentabilidad si estaba cerrado
+          if (!bCurrentVisible) {
+            oPanelRent.setVisible(true);
+          }
+        }
+
       }
     );
   }

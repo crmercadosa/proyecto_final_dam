@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+// @ts-nocheck
 sap.ui.define([
   "com/invertions/sapfiorimodinv/controller/BaseController",
   "sap/ui/model/json/JSONModel",

@@ -11,23 +11,37 @@
         class="">
         <content>
             <!-- Barra de búsqueda y filtros -->
-            <!-- <OverflowToolbar class="">
+            <OverflowToolbar class="">
                 <SearchField
                     id="searchField"
-                    placeholder="Buscar por nombre o símbolo..."
+                    placeholder="Buscar por cualquier campo..."
                     search=".onSearch"
+                    liveChange=".onSearch"
                     width="300px"
                     showSearchButton="true"/>
                 <ToolbarSpacer/>
+                <Label text="FILTROS:"/>
                 <Button
-                    icon="sap-icon://filter"
-                    text="Filtros Avanzados"
+                    icon="sap-icon://date-time"
+                    text="Entre Fechas"
                     type="Transparent"
-                    press=".onToggleAdvancedFilters"/>
-            </OverflowToolbar> -->
+                    press=".onToggleRangeDateFilter"/>
+                <ToolbarSeparator/>
+                <Button
+                    icon="sap-icon://money-bills"
+                    text="Rango de inversion"
+                    type="Transparent"
+                    press=".onToggleRangeInversionFilter"/>
+                <ToolbarSeparator/>
+                <Button
+                    icon="sap-icon://trend-up"
+                    text="Rango de rentabilidad"
+                    type="Transparent"
+                    press=".onToggleRangeRentFilter"/>
+            </OverflowToolbar>
 
-            <!-- Panel de Filtros Avanzados -->
-            <!-- <VBox id="advancedFiltersPanel" visible="false" class="sapUiSmallMarginBottom">
+            <!-- Panel de Filtro por Fecha -->  
+            <VBox id="rangeDatesFilter" visible="false" class="sapUiSmallMarginBottom">
                 <f:SimpleForm
                     editable="true"
                     layout="ResponsiveGridLayout"
@@ -39,8 +53,21 @@
                     <Label text="Rango de Fechas"/>
                     <DateRangeSelection
                         id="dateRangeFilter"
-                        change=".onFilterChange"/>
-                    
+                        change=".onFilterDateChange"/>
+
+                </f:SimpleForm>
+            </VBox>
+
+                        <!-- Panel de Filtro por Rango de inv -->  
+            <VBox id="rangeInversionFilter" visible="false" class="sapUiSmallMarginBottom">
+                <f:SimpleForm
+                    editable="true"
+                    layout="ResponsiveGridLayout"
+                    labelSpanXL="5"
+                    labelSpanL="5"
+                    labelSpanM="5"
+                    labelSpanS="12">
+
                     <Label text="Rango de Inversión ($)"/>
                     <RangeSlider
                         id="investmentRangeFilter"
@@ -51,7 +78,21 @@
                         width="100%"
                         showAdvancedTooltip="true"
                         enableTickmarks="true"
-                        change=".onFilterChange"/>
+                        change=".onFilterInvChange"/>
+                    
+                </f:SimpleForm>
+            </VBox>
+
+
+            <!-- Filtro por rentabilidad -->
+            <VBox id="rangeRentFilter" visible="false" class="sapUiSmallMarginBottom">
+                <f:SimpleForm
+                    editable="true"
+                    layout="ResponsiveGridLayout"
+                    labelSpanXL="5"
+                    labelSpanL="5"
+                    labelSpanM="5"
+                    labelSpanS="12">
                         
                     <Label text="Rango de Rentabilidad (%)"/>
                     <RangeSlider
@@ -62,9 +103,9 @@
                         width="100%"
                         showAdvancedTooltip="true"
                         enableTickmarks="true"
-                        change=".onFilterChange"/>
+                        change=".onFilterRentChange"/>
                 </f:SimpleForm>
-            </VBox> -->
+            </VBox>
 
 
             <OverflowToolbar>
@@ -89,7 +130,7 @@
             <ScrollContainer height="80%" vertical="true" horizontal="false" width="100%">
                 <Table
                     id="historyTable"
-                    items="{historyModel>/values}"
+                    items="{historyModel>/filteredValues}"
                     mode="{= ${historyModel>/isDeleteMode} ? 'MultiSelect' : 'SingleSelect' }"
                     growing="true"
                     growingThreshold="10"

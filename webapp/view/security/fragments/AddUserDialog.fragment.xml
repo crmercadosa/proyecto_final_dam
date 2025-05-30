@@ -30,10 +30,36 @@
             <Input id="inputExtension" placeholder="Extensión"/>
 
             <!-- Campo existente: Número telefónico -->
-            <Input id="inputUserPhoneNumber" placeholder="Número telefónico"/>
+            <!-- <Input id="inputUserPhoneNumber" placeholder="Número telefónico"/> -->
+            <Input
+                id="inputUserPhoneNumber"
+                placeholder=" Numero telefónico"
+                value="{newUserModel>/PHONENUMBER}"
+                liveChange="onPhoneInputChange"
+                class = "phoneMaskedInput"
+                maxLength="12" 
+            />
+
+
 
             <!-- Campo existente: Correo Electrónico -->
-            <Input id="inputUserEmail" placeholder="Correo Electrónico"/>
+            <!-- <Input id="inputUserEmail" placeholder="Correo Electrónico"/> -->
+
+            <HBox justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom">
+                <Input
+                    id="inputEmailUser"
+                    width="8rem"
+                    placeholder="usuario"
+                    liveChange="onEmailPartChanged" />
+                    
+                <Text text="@" class="sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
+
+                <Input
+                    id="inputEmailDomain"
+                    width="10rem"
+                    placeholder="dominio.com"
+                    liveChange="onEmailPartChanged" />
+            </HBox>
 
             <!-- Campo existente: Fecha de nacimiento -->
             <DatePicker id="inputUserBirthdayDate" placeholder="Fecha de nacimiento" displayFormat="long" />
@@ -41,14 +67,29 @@
             <!-- Nuevo: Campo AVATAR (URL del avatar o similar) -->
             <Input id="inputUserAvatar" placeholder="URL del Avatar" />
 
-            <ComboBox id="comboBoxCompanies" items="{companiesModel>/companies}" selectionChange="onCompanySelected" placeholder="Compañía">
-                <core:Item key="{companiesModel>VALUEID}" text="{companiesModel>VALUE}" />
+            <ComboBox id="comboBoxCompanies"
+                items="{companyModel>/companies}"
+                selectionChange="onCompanySelected"
+                placeholder="Compañía"
+                selectedKey="{newUserModel>/COMPANYID}">
+            <core:Item key="{companyModel>COMPANYID}" text="{companyModel>NAME}" />
             </ComboBox>
 
-            
-            <ComboBox id="comboBoxCedis" items="{cedisModel>/cedis}" selectionChange="onCediSelected" placeholder="Departamento">
-                <core:Item key="{cedisModel>VALUEID}" text="{cedisModel>VALUE}" />
+            <ComboBox id="comboBoxCedis"
+                items="{cediModel>/cedis}"
+                selectionChange="onCediSelected"
+                placeholder="CEDI"
+                selectedKey="{newUserModel>/CEDIID}">
+            <core:Item key="{cediModel>CEDI_ID}" text="{cediModel>NAME}" />
             </ComboBox>
+
+            <ComboBox id="comboBoxDeptos"
+                items="{deptoModel>/deptos}"
+                placeholder="Departamento"
+                selectedKey="{newUserModel>/DEPTID}">
+            <core:Item key="{deptoModel>DEPT_ID}" text="{deptoModel>NAME}" />
+            </ComboBox>
+
 
             <ComboBox id="comboBoxRoles" items="{rolesModel>/roles}" selectionChange="onRoleSelected" placeholder="Selecciona un Rol">
                 <core:Item key="{rolesModel>ROLEID}" text="{rolesModel>ROLENAME}" />

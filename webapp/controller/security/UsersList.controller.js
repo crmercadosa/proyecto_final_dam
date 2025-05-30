@@ -36,7 +36,42 @@ sap.ui.define([
             // Carga los usuarios
             this.loadUsers();
             this.loadRoles();
-            this.loadCompanies();
+            // this.loadCompanies();
+
+            const oView = this.getView();
+
+            // Modelo de compañías
+            const companies = [
+                { COMPANYID: "COCA", NAME: "Coca Cola" },
+                { COMPANYID: "MSFT", NAME: "Microsoft" },
+                { COMPANYID: "STBK", NAME: "Starbucks" },
+                { COMPANYID: "AAPL", NAME: "Apple" },
+            ];
+            const companyModel = new sap.ui.model.json.JSONModel({ companies });
+            oView.setModel(companyModel, "companyModel");
+
+            // Modelo completo de CEDIS
+            this._allCedis = [
+                { CEDI_ID: "COCATEPIC", NAME: "Coca Cola Tepic", COMPANYID: "COCA" },
+                { CEDI_ID: "COCACHIH", NAME: "Coca Cola Chihuahua", COMPANYID: "COCA" },
+                { CEDI_ID: "MSFTRDC", NAME: "Microsoft Redmond", COMPANYID: "MSFT" },
+                { CEDI_ID: "STBKMEX", NAME: "Starbucks CDMX", COMPANYID: "STBK" },
+                { CEDI_ID: "AAPLCA", NAME: "Apple Cupertino", COMPANYID: "AAPL" }
+            ];
+            oView.setModel(new sap.ui.model.json.JSONModel({ cedis: [] }), "cediModel");
+
+            // Modelo completo de departamentos
+            this._allDeptos = [
+                { DEPT_ID: "ALM", NAME: "Almacén", CEDI_ID: "COCATEPIC" },
+                { DEPT_ID: "VENT", NAME: "Ventas", CEDI_ID: "COCATEPIC" },
+                { DEPT_ID: "MKT", NAME: "Marketing", CEDI_ID: "COCACHIH" },
+                { DEPT_ID: "RH", NAME: "Recursos Humanos", CEDI_ID: "MSFTRDC" },
+                { DEPT_ID: "TI", NAME: "TI", CEDI_ID: "MSFTRDC" },
+                { DEPT_ID: "SOP", NAME: "Soporte", CEDI_ID: "STBKMEX" },
+                { DEPT_ID: "LOG", NAME: "Logística", CEDI_ID: "AAPLCA" }
+            ];
+            oView.setModel(new sap.ui.model.json.JSONModel({ deptos: [] }), "deptoModel");
+
         },
 
         /**
@@ -87,40 +122,62 @@ sap.ui.define([
                 });
         },
 
-        onCompanySelected: function(oEvent){
-            var oComboBox = oEvent.getSource();
-            var sSelectedKey = oComboBox.getSelectedKey();
-            var oView = this.getView();
+        // onCompanySelected: function(oEvent){
+        //     var oComboBox = oEvent.getSource();
+        //     var sSelectedKey = oComboBox.getSelectedKey();
+        //     var oView = this.getView();
 
-            if(sSelectedKey){
-                this.loadDeptos(sSelectedKey);
-            } else {
-                // Si se borra la selección, limpiamos el modelo de departamentos
-                var oEmptyModel = new JSONModel({ cedis: [] });
-                oView.setModel(oEmptyModel, "cedisModel");
-            }
+        //     if(sSelectedKey){
+        //         this.loadDeptos(sSelectedKey);
+        //     } else {
+        //         // Si se borra la selección, limpiamos el modelo de departamentos
+        //         var oEmptyModel = new JSONModel({ cedis: [] });
+        //         oView.setModel(oEmptyModel, "cedisModel");
+        //     }
+        // },
+
+        
+
+        // loadDeptos: function(companiId){
+        //     var oView = this.getView();
+        //     var oCedisModel = new JSONModel();
+
+        //     return fetch("env.json")
+        //         .then(res => res.json())
+        //         .then(env => fetch(env.API_VALUES_URL_BASE + "getallvalues?LABELID=IdCedis&COMPANYID=" + companiId))
+        //         .then(res => res.json())
+        //         .then(data => {
+        //             oCedisModel.setData({ cedis: data.value });
+        //             oView.setModel(oCedisModel, "cedisModel");
+        //         })
+        //         .catch(err => {
+        //             MessageToast.show("Error al cargar departamentos: " + err.message);
+        //         });
+        // },
+
+        onCompanySelected: function (oEvent) {
+            const selectedCompanyId = oEvent.getSource().getSelectedKey();
+
+            // Filtrar CEDIS por compañía
+            const filteredCedis = this._allCedis.filter(c => c.COMPANYID === selectedCompanyId);
+            this.getView().getModel("cediModel").setProperty("/cedis", filteredCedis);
+
+            // Limpiar deptos si cambias de compañía
+            this.getView().getModel("deptoModel").setProperty("/deptos", []);
         },
 
-        loadDeptosAll: function(companiId){
-            
+
+        onCediSelected: function (oEvent) {
+        const selectedCediId = oEvent.getSource().getSelectedKey();
+
+        // Filtrar departamentos por CEDI
+        const filteredDeptos = this._allDeptos.filter(d => d.CEDI_ID === selectedCediId);
+        this.getView().getModel("deptoModel").setProperty("/deptos", filteredDeptos);
         },
 
-        loadDeptos: function(companiId){
-            var oView = this.getView();
-            var oCedisModel = new JSONModel();
 
-            return fetch("env.json")
-                .then(res => res.json())
-                .then(env => fetch(env.API_VALUES_URL_BASE + "getallvalues?LABELID=IdCedis&COMPANYID=" + companiId))
-                .then(res => res.json())
-                .then(data => {
-                    oCedisModel.setData({ cedis: data.value });
-                    oView.setModel(oCedisModel, "cedisModel");
-                })
-                .catch(err => {
-                    MessageToast.show("Error al cargar departamentos: " + err.message);
-                });
-        },
+
+
 
 
         /**
@@ -244,12 +301,14 @@ sap.ui.define([
             var EmplId = oView.byId("inputEmployeeId").getValue();
             var Ext = oView.byId("inputExtension").getValue();
             var Phone = oView.byId("inputUserPhoneNumber").getValue();
-            var Email = oView.byId("inputUserEmail").getValue();
+            var EmailUser = oView.byId("inputEmailUser").getValue();
+            var EmailDomain = oView.byId("inputEmailDomain").getValue();
+            var Email = EmailUser + "@" + EmailDomain;
             var Birthday = oView.byId("inputUserBirthdayDate").getDateValue();
             var formattedBirthday = Birthday ? Birthday.toISOString().split("T")[0] : null;
             var Avatar = oView.byId("inputUserAvatar").getValue();
             var Company = oView.byId("comboBoxCompanies").getSelectedItem().getText();
-            var Department = oView.byId("comboBoxCedis").getSelectedItem().getText();
+            var Department = oView.byId("comboBoxDeptos").getSelectedItem().getText();
             var CediId = oView.byId("comboBoxCedis").getSelectedKey();
             var Function = oView.byId("inputUserFunction").getValue();
 
@@ -910,7 +969,7 @@ sap.ui.define([
             dateInput.setDateValue(null);
 
             // Limpiar ComboBoxes (deseleccionar items)
-            ["comboBoxCompanies", "comboBoxCedis", "comboBoxRoles"].forEach(id => {
+            ["comboBoxCompanies", "comboBoxCedis","comvoBoxDeptos","comboBoxRoles"].forEach(id => {
                 var combo = oView.byId(id);
                 if (combo) combo.setSelectedItem(null);
             });
@@ -953,7 +1012,25 @@ sap.ui.define([
         parseDateAsLocal: function(dateString) {
             var parts = dateString.split("-");
             return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        },
+
+        onPhoneInputChange: function (oEvent) {
+            let value = oEvent.getParameter("value").replace(/\D/g, ""); // Quita todo lo que no sea dígito
+
+            // Formato automático tipo XXX XXX XXXX
+            if (value.length > 3 && value.length <= 6) {
+                value = `${value.slice(0, 3)} ${value.slice(3)}`;
+            } else if (value.length > 6) {
+                value = `${value.slice(0, 3)} ${value.slice(3, 6)} ${value.slice(6, 10)}`;
+            }
+
+            // Setea el valor formateado
+            this.byId("inputUserPhoneNumber").setValue(value);
+
+            // También puedes actualizar el modelo
+            this.getView().getModel("newUserModel").setProperty("/PHONENUMBER", value);
         }
+
 
 
     });

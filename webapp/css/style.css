@@ -86,3 +86,16 @@
   min-height: 500px;
   height:500px
 }
+
+/* En tu archivo CSS (o style dentro del componente) */
+.phoneMaskedInput .sapMInputBaseInner {
+    letter-spacing: 0.25em; /* espacio entre caracteres */
+    font-family: monospace;
+    border-bottom: 2px solid #000; /* línea horizontal inferior global */
+}
+
+.centeredText {
+    text-align: center;
+    width: 100%;
+    display: block;
+}
