@@ -31,40 +31,67 @@
 
               <core:Title text="Privilegios por Proceso" />
 
-              <m:Label text="Proceso" />
-              <m:ComboBox
-                items="{processCatalogModel>/values}"
-                selectedKey="{newRoleModel>/NEW_PROCESSID}"
-                placeholder="Selecciona un proceso">
-                <core:Item key="{processCatalogModel>VALUEID}" text="{processCatalogModel>VALUE} -{processCatalogModel>VALUEPAID}" />
-              </m:ComboBox>
+              <!-- Aplicación -->
+<m:Label text="Aplicación" />
+<m:ComboBox
+  items="{applicationCatalogModel>/values}"
+  selectedKey="{newRoleModel>/NEW_APPLICATIONID}"
+  selectionChange=".onApplicationChange"
+  placeholder="Selecciona una aplicación">
+  <core:Item key="{applicationCatalogModel>VALUEID}" text="{applicationCatalogModel>VALUE}" />
+</m:ComboBox>
 
-              <m:Label text="Privilegios" />
-              <m:MultiComboBox
-                items="{privilegeCatalogModel>/values}"
-                selectedKeys="{newRoleModel>/NEW_PRIVILEGES}"
-                placeholder="Selecciona privilegios">
-                <core:Item key="{privilegeCatalogModel>VALUEID}" text="{privilegeCatalogModel>VALUE}" />
-              </m:MultiComboBox>
+<!-- Vista -->
+<m:Label text="Vista" />
+<m:ComboBox
+  items="{viewCatalogModel>/values}"
+  selectedKey="{newRoleModel>/NEW_VIEWID}"
+  selectionChange=".onViewChange"
+  placeholder="Selecciona una vista">
+  <core:Item key="{viewCatalogModel>VALUEID}" text="{viewCatalogModel>VALUE}" />
+</m:ComboBox>
+
+<!-- Proceso -->
+<m:Label text="Proceso" />
+<m:ComboBox
+  items="{processCatalogModel>/values}"
+  selectedKey="{newRoleModel>/NEW_PROCESSID}"
+  selectionChange=".onProcessChange"
+  placeholder="Selecciona un proceso">
+  <core:Item key="{processCatalogModel>VALUEID}" text="{processCatalogModel>VALUE}" />
+</m:ComboBox>
+
+<!-- Privilegios -->
+<m:Label text="Privilegios" />
+<m:MultiComboBox
+  items="{privilegeCatalogModel>/values}"
+  selectedKeys="{newRoleModel>/NEW_PRIVILEGES}"
+  placeholder="Selecciona privilegios">
+  <core:Item key="{privilegeCatalogModel>VALUEID}" text="{privilegeCatalogModel>VALUE}" />
+</m:MultiComboBox>
 
               <m:Button text="Agregar Privilegio" icon="sap-icon://add" press=".onAddPrivilege" />
 
                   <m:Table items="{newRoleModel>/PRIVILEGES}" growing="true" growingThreshold="5">
-                      <m:columns>
-                        <m:Column><m:Text text="Proceso" /></m:Column>
-                        <m:Column><m:Text text="Privilegios" /></m:Column>
-                        <m:Column width="5rem" /> <!-- Columna vacía para el botón -->
-                      </m:columns>
-                      <m:items>
-                        <m:ColumnListItem>
-                          <m:cells>
-                            <m:Text text="{newRoleModel>PROCESSID}" />
-                            <m:Text text="{= ${newRoleModel>PRIVILEGEID}.join(', ')}" />
-                            <m:Button icon="sap-icon://decline" type="Reject" press=".onRemovePrivilege" tooltip="Eliminar" />
-                          </m:cells>
-                        </m:ColumnListItem>
-                      </m:items>
-                    </m:Table>
+  <m:columns>
+    <m:Column><m:Text text="Aplicación" /></m:Column>
+    <m:Column><m:Text text="Vista" /></m:Column>
+    <m:Column><m:Text text="Proceso" /></m:Column>
+    <m:Column><m:Text text="Privilegios" /></m:Column>
+    <m:Column width="5rem" />
+  </m:columns>
+  <m:items>
+    <m:ColumnListItem>
+      <m:cells>
+        <m:Text text="{newRoleModel>APPLICATIONID}" />
+        <m:Text text="{newRoleModel>VIEWID}" />
+        <m:Text text="{newRoleModel>PROCESSID}" />
+        <m:Text text="{= ${newRoleModel>PRIVILEGEID}.join(', ')}" />
+        <m:Button icon="sap-icon://decline" type="Reject" press=".onRemovePrivilege" tooltip="Eliminar" />
+      </m:cells>
+    </m:ColumnListItem>
+  </m:items>
+</m:Table>
             </layout:SimpleForm>
 
             <m:buttons>

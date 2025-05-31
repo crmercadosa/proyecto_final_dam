@@ -130,17 +130,37 @@ sap.ui.define([
 
     // =================== CREAR ROL ===================
     onOpenDialog: async function () {
-      await this.loadCatalogsOnce();
+      // Carga todos los catálogos
+      const env = await fetch("env.json").then(r => r.json());
+      const [apps, views, procs, privs] = await Promise.all([
+        fetch(env.API_VALUES_URL_BASE + "getallvalues?LABELID=IdApplications").then(r => r.json()),
+        fetch(env.API_VALUES_URL_BASE + "getallvalues?LABELID=IdViews").then(r => r.json()),
+        fetch(env.API_VALUES_URL_BASE + "getallvalues?LABELID=IdProcesses").then(r => r.json()),
+        fetch(env.API_VALUES_URL_BASE + "getallvalues?LABELID=IdPrivileges").then(r => r.json())
+      ]);
+      this._allApps = apps.value;
+      this._allViews = views.value;
+      this._allProcs = procs.value;
+      this._allPrivs = privs.value;
 
+      this.getView().setModel(new JSONModel({ values: this._allApps }), "applicationCatalogModel");
+      this.getView().setModel(new JSONModel({ values: [] }), "viewCatalogModel");
+      this.getView().setModel(new JSONModel({ values: [] }), "processCatalogModel");
+      this.getView().setModel(new JSONModel({ values: [] }), "privilegeCatalogModel");
+
+      // Limpia el modelo del rol nuevo
       this.getView().getModel("newRoleModel").setData({
         ROLEID: "",
         ROLENAME: "",
         DESCRIPTION: "",
+        NEW_APPLICATIONID: "",
+        NEW_VIEWID: "",
         NEW_PROCESSID: "",
         NEW_PRIVILEGES: [],
         PRIVILEGES: []
       });
 
+      // Abre el diálogo
       if (!this._pDialog) {
         this._pDialog = await Fragment.load({
           id: this.getView().getId(),
@@ -149,7 +169,6 @@ sap.ui.define([
         });
         this.getView().addDependent(this._pDialog);
       }
-
       this._pDialog.setTitle("Crear Rol");
       this._pDialog.open();
     },
@@ -343,16 +362,20 @@ sap.ui.define([
       var oModel = this.getView().getModel("newRoleModel");
       var oData = oModel.getData();
 
-      if (!oData.NEW_PROCESSID || !Array.isArray(oData.NEW_PRIVILEGES) || oData.NEW_PRIVILEGES.length === 0) {
-        MessageToast.show("Selecciona proceso y al menos un privilegio.");
+      if (!oData.NEW_APPLICATIONID || !oData.NEW_VIEWID || !oData.NEW_PROCESSID || !Array.isArray(oData.NEW_PRIVILEGES) || oData.NEW_PRIVILEGES.length === 0) {
+        MessageToast.show("Selecciona aplicación, vista, proceso y al menos un privilegio.");
         return;
       }
 
       oData.PRIVILEGES.push({
+        APPLICATIONID: oData.NEW_APPLICATIONID,
+        VIEWID: oData.NEW_VIEWID,
         PROCESSID: oData.NEW_PROCESSID,
         PRIVILEGEID: oData.NEW_PRIVILEGES.slice()
       });
 
+      oData.NEW_APPLICATIONID = "";
+      oData.NEW_VIEWID = "";
       oData.NEW_PROCESSID = "";
       oData.NEW_PRIVILEGES = [];
       oModel.setData(oData);
@@ -384,6 +407,56 @@ sap.ui.define([
       var oBinding = this.byId("rolesTable").getBinding("rows");
       var aFilters = sQuery ? [new sap.ui.model.Filter("ROLENAME", sap.ui.model.FilterOperator.Contains, sQuery)] : [];
       oBinding.filter(aFilters);
-    }
+    },
+
+    onApplicationChange: function(oEvent) {
+      var appId = oEvent.getSource().getSelectedKey();
+      // Filtra donde el VALUEPAID termine con el ID seleccionado
+      var filteredViews = this._allViews.filter(v => 
+        v.VALUEPAID && v.VALUEPAID.split("-").pop() === appId
+      );
+      this.getView().setModel(new JSONModel({ values: filteredViews }), "viewCatalogModel");
+      this.getView().setModel(new JSONModel({ values: [] }), "processCatalogModel");
+      this.getView().setModel(new JSONModel({ values: [] }), "privilegeCatalogModel");
+      var model = this.getView().getModel("newRoleModel");
+      model.setProperty("/NEW_VIEWID", "");
+      model.setProperty("/NEW_PROCESSID", "");
+      model.setProperty("/NEW_PRIVILEGES", []);
+      model.setProperty("/NEW_APPLICATIONID", appId);
+    },
+
+    onViewChange: function(oEvent) {
+      var viewId = oEvent.getSource().getSelectedKey();
+      console.log("Vista seleccionada:", viewId);
+      console.log("Todos los procesos:", this._allProcs);
+
+      var filteredProcs = this._allProcs.filter(p => 
+        p.VALUEPAID && p.VALUEPAID.split("-").pop() === viewId
+      );
+      console.log("Procesos filtrados:", filteredProcs);
+
+      this.getView().setModel(new JSONModel({ values: filteredProcs }), "processCatalogModel");
+      this.getView().setModel(new JSONModel({ values: [] }), "privilegeCatalogModel");
+      var model = this.getView().getModel("newRoleModel");
+      model.setProperty("/NEW_PROCESSID", "");
+      model.setProperty("/NEW_PRIVILEGES", []);
+      model.setProperty("/NEW_VIEWID", viewId);
+    },
+
+    onProcessChange: function(oEvent) {
+      var procId = oEvent.getSource().getSelectedKey();
+      console.log("Proceso seleccionado:", procId);
+      console.log("Todos los privilegios:", this._allPrivs);
+
+      var filteredPrivs = this._allPrivs.filter(p => 
+        p.VALUEPAID && p.VALUEPAID.split("-").pop() === procId
+      );
+      console.log("Privilegios filtrados:", filteredPrivs);
+
+      this.getView().setModel(new JSONModel({ values: filteredPrivs }), "privilegeCatalogModel");
+      var model = this.getView().getModel("newRoleModel");
+      model.setProperty("/NEW_PRIVILEGES", []);
+      model.setProperty("/NEW_PROCESSID", procId);
+    },
   });
 });
