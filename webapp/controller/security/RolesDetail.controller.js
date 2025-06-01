@@ -166,5 +166,10 @@ sap.ui.define([
     onNavToUsers: function () {
       this.getRouter().navTo("RouteUsersList");
     },
+
+    formatPrivileges: function(aPrivs) {
+      if (!aPrivs || !Array.isArray(aPrivs)) return "";
+      return aPrivs.map(p => p.PRIVILEGENAME || p.PRIVILEGEID).join(", ");
+    },
   });
 });

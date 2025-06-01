@@ -9,12 +9,7 @@
 
   <m:VBox class="sapUiContentPadding">
 
-    <!-- 🔹 Encabezado con botones -->
-    <m:OverflowToolbar>
-      <m:Button text="Catálogos" icon="sap-icon://list" type="Transparent" press=".onNavToCatalogs"/>
-      <m:Button text="Usuarios" icon="sap-icon://employee" type="Transparent" press=".onNavToUsers"/>
-    </m:OverflowToolbar>
-
+    
     <!-- 🔹 Información del rol -->
     <m:VBox id="roleInfoBox" class="sapUiSmallMargin">
       <m:Text id="roleIdText" text="ID: {selectedRole>/ROLEID}" />
@@ -50,34 +45,35 @@
         </tl:rowMode>
 
         <tl:columns>
+          <!-- Proceso -->
           <tl:Column>
             <m:Label text="Proceso" />
             <tl:template>
               <m:Text text="{selectedRole>PROCESSNAME}" />
             </tl:template>
           </tl:Column>
+          <!-- Privilegios -->
           <tl:Column>
-            <m:Label text="Aplicación" />
+            <m:Label text="Privilegios" />
             <tl:template>
-              <m:Text text="{selectedRole>APPLICATIONNAME}" />
+              <m:Text text="{
+                path: 'selectedRole>PRIVILEGES',
+                formatter: '.formatPrivileges'
+              }" />
             </tl:template>
           </tl:Column>
+          <!-- Vista -->
           <tl:Column>
             <m:Label text="Vista" />
             <tl:template>
               <m:Text text="{selectedRole>VIEWNAME}" />
             </tl:template>
           </tl:Column>
+          <!-- Aplicación -->
           <tl:Column>
-            <m:Label text="Privilegios" />
+            <m:Label text="Aplicación" />
             <tl:template>
-              <m:HBox wrap="Wrap">
-                <m:FlexBox wrap="Wrap" items="{selectedRole>PRIVILEGES}">
-                  <m:items>
-                    <m:ObjectStatus text="{selectedRole>PRIVILEGENAME}" class="sapUiTinyMarginEnd sapUiTinyMarginTop" />
-                  </m:items>
-                </m:FlexBox>
-              </m:HBox>
+              <m:Text text="{selectedRole>APPLICATIONNAME}" />
             </tl:template>
           </tl:Column>
         </tl:columns>
