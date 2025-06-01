@@ -1,3 +1,7 @@
+// @ts-nocheck
+/* eslint-disable no-extra-bind */
+/* eslint-disable comma-dangle */
+/* eslint-disable curly */
 /* eslint-disable fiori-custom/sap-no-hardcoded-url */
 /* eslint-disable no-console */
 sap.ui.define(
@@ -16,25 +20,50 @@ sap.ui.define(
       "com.invertions.sapfiorimodinv.controller.catalogs.Catalogs",
       {
         // ---------------------------------------------------- INICIO DE LA VISTA
-
         onInit: function () {
-          var oModel = new JSONModel();
-          var that = this;
-
           this._oDialog = null;
-
-          $.ajax({
-            url: "http://localhost:4004/api/sec/getall",
-            method: "GET",
-            success: function (data) {
-              oModel.setData({ value: data.value });
-              that.getView().setModel(oModel);
-            },
-          });
+          this._aAllValues = [];
+          this.loadLabels();
+          this.loadValues();
         },
 
-        // ---------------------------------------------------- PARA FILTRAR EN LA TABLA
+        loadLabels: function(){
+          var oModel = new JSONModel();
+          var that = this;
+            fetch("env.json")
+                .then(res => res.json())
+                .then(env => fetch(env.API_LABELS_URL_BASE + "getalllabels"))
+                .then(res => res.json())
+                .then(data => {
+                    oModel.setData({ value: data.value });
+                    that.getView().setModel(oModel);
+                })
+                .catch(err => {
+                    if(err.message === ("Cannot read properties of undefined (reading 'setModel')")){
+                        return;
+                    }else{
+                        MessageToast.show("Error al cargar catalogos: " + err.message);
+                    }      
+                });   
+        },
 
+        loadValues: function(){
+            fetch("env.json")
+                .then(res => res.json())
+                .then(env => fetch(env.API_VALUES_URL_BASE + "getallvalues"))
+                .then(res => res.json())
+                .then(data => {
+                    this._aAllValues = data.value || [];
+                })
+                .catch(err => {
+                    if(err.message === ("Cannot read properties of undefined (reading 'setModel')")){
+                        return;
+                    }else{
+                        MessageToast.show("Error al cargar valores: " + err.message);
+                    }      
+                });   
+        },
+        // ---------------------------------------------------- PARA FILTRAR EN LA TABLA
         onFilterChange: function (oEvent) {
           var sQuery = oEvent.getSource().getValue();
           var oTable = this.byId("catalogTable");
@@ -69,7 +98,6 @@ sap.ui.define(
         },
 
         // ---------------------------------------------------- PARA AGREGAR UN NUEVO LABEL
-
         onAddCatalog: function () {
           // Inicializa el modelo con estructura completa
           var oModel = new JSONModel({
@@ -79,8 +107,8 @@ sap.ui.define(
             LABEL: "",
             INDEX: "",
             COLLECTION: "",
-            SECTION: "seguridad", // Valor por defecto
-            SEQUENCE: 10, // Valor por defecto
+            SECTION: "", // Valor por defecto
+            SEQUENCE: 0, // Valor por defecto
             IMAGE: "",
             DESCRIPTION: "",
             DETAIL_ROW: {
@@ -88,17 +116,11 @@ sap.ui.define(
               DELETED: false,
               DETAIL_ROW_REG: [
                 {
-                  CURRENT: false,
-                  REGDATE: new Date().toISOString(),
-                  REGTIME: new Date().toISOString(),
-                  REGUSER: "FIBARRAC",
-                },
-                {
-                  CURRENT: true,
-                  REGDATE: new Date().toISOString(),
-                  REGTIME: new Date().toISOString(),
-                  REGUSER: "FIBARRAC",
-                },
+                  CURRENT: "",
+                  REGDATE: "",
+                  REGTIME: "",
+                  REGUSER: "SYSTEM",
+                }
               ],
             },
           });
@@ -144,50 +166,70 @@ sap.ui.define(
           });
 
           if (bLabelIdExists) {
-            MessageToast.show(
-              "El LABELID ya existe, por favor ingrese uno diferente"
-            );
+            MessageToast.show("El LABELID ya existe, por favor ingrese uno diferente");
             return;
           }
 
-          // Preparar datos para enviar
+          var activado = null;
+          var desactivado = null;
+          if(oData.DETAIL_ROW.ACTIVED === true){
+            activado = true;
+            desactivado = false;
+          }else{
+            activado = false;
+            desactivado = true;
+          }
+
+          // Aquí va el payload correcto
           var payload = {
-            values: oData,
+            label: {
+              COMPANYID: oData.COMPANYID,
+              CEDIID: oData.CEDIID,
+              LABELID: oData.LABELID,
+              LABEL: oData.LABEL,
+              INDEX: oData.INDEX,
+              COLLECTION: oData.COLLECTION,
+              SECTION: "seguridad", // Valor por defecto
+              SEQUENCE: 10, // Valor por defecto
+              IMAGE: oData.IMAGE,
+              DESCRIPTION: oData.DESCRIPTION,
+              DETAIL_ROW: {
+                ACTIVED: activado,
+                DELETED: desactivado
+              }
+            }
           };
 
-          console.log("Data:", JSON.stringify(oData));
-
-          $.ajax({
-            url: "http://localhost:4004/api/sec/newLabel", // Ajusta tu endpoint
-            method: "POST",
-            contentType: "application/json",
-            data: JSON.stringify(payload),
-            // @ts-ignore
-            success: function (response) {
-              MessageToast.show("Catálogo agregado correctamente");
-              this._oAddDialog.close();
-
-              // Agregar el nuevo registro
-              aData.push(oData);
-              // Actualizar el modelo
-              oTableModel.setProperty("/value", aData);
-            }.bind(this),
-            error: function (error) {
-              MessageToast.show("Error al guardar: " + error.responseText);
-            },
-          });
+          fetch("env.json")
+                .then(res => res.json())
+                .then(env => fetch(env.API_LABELS_URL_BASE + "addonelabel", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                }))
+                .then(response => {
+                    if (!response.ok) {throw new Error("Error en la respuesta del servidor");}
+                    return response.json();
+                })
+                .then(() => {
+                    MessageToast.show("Catalogo creado correctamente");
+                    this._oAddDialog.close();
+                    // Agregar el nuevo registro
+                    aData.push(oData);
+                    oTableModel.setProperty("/value", aData);
+                })
+                .catch(err => MessageToast.show("Error al crear catalogo: " + err.message));
         },
+
 
         onCancelAddCatalog: function () {
           if (this._oAddDialog) {
             this._oAddDialog.close();
           }
         },
-
         // ---------------------------------------------------- FIN PARA AGREGAR UN NUEVO LABEL
 
         // ---------------------------------------------------- PARA EDITAR UN LABEL
-
         onEditPressed: function () {
           if (!this._oSelectedItem) return;
 
@@ -196,7 +238,9 @@ sap.ui.define(
 
           // Crear modelo para edición
           var oEditModel = new JSONModel($.extend(true, {}, oData));
-          this.getView().setModel(oEditModel, "editModel");
+          this.getView().setModel(oEditModel, "editModel"); //AQUI SE HACE REFERENCIA HACIA EL MODELO DE EDICIÓN
+
+          this.labelidToUpdate = oData.LABELID;
 
           // Cargar diálogo de edición
           if (!this._oEditDialog) {
@@ -207,7 +251,6 @@ sap.ui.define(
             }).then(
               function (oDialog) {
                 this._oEditDialog = oDialog;
-                // @ts-ignore
                 this.getView().addDependent(oDialog);
                 oDialog.open();
               }.bind(this)
@@ -218,50 +261,67 @@ sap.ui.define(
         },
 
         onSaveEdit: function () {
-          var oEditModel = this.getView().getModel("editModel");
+          var oEditModel = this.getView().getModel("editModel"); //AQUI TRAE LA INFO DEL MODELO DE EDICIÓN
           var oEditedData = oEditModel.getData();
-
+          
           // Obtener el modelo de la tabla
           var oTableModel = this.getView().getModel();
           var aData = oTableModel.getProperty("/value") || [];
 
+          var that = this;
+
+          var payload = {
+            label: {
+              COMPANYID: oEditedData.COMPANYID,
+              CEDIID: oEditedData.CEDIID,
+              LABELID: oEditedData.LABELID,
+              LABEL: oEditedData.LABEL,
+              INDEX: oEditedData.INDEX,
+              COLLECTION: oEditedData.COLLECTION,
+              SECTION: oEditedData.SECTION, 
+              SEQUENCE: oEditedData.SEQUENCE,
+              IMAGE: oEditedData.IMAGE,
+              DESCRIPTION: oEditedData.DESCRIPTION,
+            }
+          };
+          
           // Llamada a la API para actualizar
-          $.ajax({
-            url: "http://localhost:4004/api/sec/updateLabel",
-            method: "POST",
-            contentType: "application/json",
-            data: JSON.stringify({
-              values: oEditedData,
-            }),
-            // @ts-ignore
-            success: function (response) {
-              MessageToast.show("Registro actualizado correctamente");
-              this._oEditDialog.close();
+          fetch("env.json")
+              .then(res => res.json())
+              .then(env => fetch(env.API_LABELS_URL_BASE + "updateonelabel?LABELID=" + that.labelidToUpdate, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(payload)
+              }))
+              .then(response => {
+                  if (!response.ok) {throw new Error("Error en la respuesta del servidor");}
+                  return response.json();
+              })
+              .then(() => {
+                MessageToast.show("Catalogo actualizado correctamente");
+                this._oEditDialog.close();
 
-              var updatedIndex = aData.findIndex(
-                (item) => item._id === oEditedData._id
-              );
+                var updatedIndex = aData.findIndex(
+                  (item) => item.LABELID === oEditedData.LABELID
+                );
 
-              if (updatedIndex !== -1) {
-                aData[updatedIndex] = {
-                  ...aData[updatedIndex],
-                  LABELID: oEditedData.LABELID,
-                  VALUEPAID: oEditedData.VALUEPAID,
-                  LABEL: oEditedData.LABEL,
-                  INDEX: oEditedData.INDEX,
-                  COLLECTION: oEditedData.COLLECTION,
-                  SECTION: oEditedData.SECTION,
-                  SEQUENCE: oEditedData.SEQUENCE,
-                  IMAGE: oEditedData.IMAGE,
-                  DESCRIPTION: oEditedData.DESCRIPTION,
-                };
-                oTableModel.setProperty("/values", aData);
-              }
-            }.bind(this),
-            error: function (error) {
-              MessageToast.show("Error al actualizar: " + error.responseText);
-            }.bind(this),
-          });
+                if (updatedIndex !== -1) {
+                  aData[updatedIndex] = {
+                    ...aData[updatedIndex],
+                    LABELID: oEditedData.LABELID,
+                    VALUEPAID: oEditedData.VALUEPAID,
+                    LABEL: oEditedData.LABEL,
+                    INDEX: oEditedData.INDEX,
+                    COLLECTION: oEditedData.COLLECTION,
+                    SECTION: oEditedData.SECTION,
+                    SEQUENCE: oEditedData.SEQUENCE,
+                    IMAGE: oEditedData.IMAGE,
+                    DESCRIPTION: oEditedData.DESCRIPTION,
+                  };
+                  oTableModel.setProperty("/values", aData);
+                }
+              })
+              .catch(err => MessageToast.show("Error al actualizar catalogo: " + err.message));
         },
 
         onCancelEdit: function () {
@@ -279,40 +339,61 @@ sap.ui.define(
 
           var oContext = this._oSelectedItem.getBindingContext();
           var oData = oContext.getObject();
+          var that = this;
 
-          MessageBox.confirm("¿Está seguro de eliminar este registro?", {
+          // Filtrar values asociados al label
+          var aAssociatedValues = (this._aAllValues || []).filter(function (value) {
+            return value.LABELID === oData.LABELID;
+          });
+
+          var sMessage = "¿Está seguro de eliminar este registro?";
+          if (aAssociatedValues.length > 0) {
+            sMessage += "\nSe eliminarán todos los valores asociados a este catalogo.";
+          }
+
+          MessageBox.confirm(sMessage, {
             actions: [MessageBox.Action.YES, MessageBox.Action.NO],
             onClose: function (sAction) {
-              if (sAction === MessageBox.Action.YES) {
-                $.ajax({
-                  url: "http://localhost:4004/api/sec/deleteLabel",
-                  method: "POST",
-                  contentType: "application/json",
-                  data: JSON.stringify({ _id: oData._id }),
-                  success: function () {
-                    MessageToast.show("Registro eliminado");
+              if (sAction !== MessageBox.Action.YES) return;
 
-                    // Actualización local del modelo
-                    var oTableModel = this.getView().getModel();
-                    var aData = oTableModel.getProperty("/value") || [];
+              fetch("env.json")
+                .then(function (response) {
+                  return response.json();
+                })
+                .then(function (env) {
+                  return fetch(env.API_LABELS_URL_BASE + "dellabelphysically?LABELID=" + oData.LABELID, {
+                    method: "POST"
+                  });
+                })
+                .then(function (response) {
+                  if (!response.ok) {
+                    throw new Error("Error en la eliminación del catálogo");
+                  }
 
-                    // Encontrar y eliminar el registro
-                    var index = aData.findIndex(
-                      (item) => item._id === oData._id
-                    );
-                    if (index !== -1) {
-                      aData.splice(index, 1);
-                      oTableModel.setProperty("/value", aData);
-                    }
-                  }.bind(this),
-                  error: function (error) {
-                    MessageToast.show(
-                      "Error al eliminar: " + error.responseText
-                    );
-                  }.bind(this),
+                  MessageToast.show("Catálogo eliminado");
+
+                  // Eliminar del modelo local
+                  var oTableModel = that.getView().getModel();
+                  var aData = oTableModel.getProperty("/value") || [];
+
+                  var index = aData.findIndex(function (item) {
+                    return item._id === oData._id;
+                  });
+                  if (index !== -1) {
+                    aData.splice(index, 1);
+                    oTableModel.setProperty("/value", aData);
+                  }
+
+                  // También podrías actualizar this._aAllValues aquí si quieres sincronizarlo
+                  that._aAllValues = that._aAllValues.filter(function (value) {
+                    return value.LABELID !== oData.LABELID;
+                  });
+
+                })
+                .catch(function (err) {
+                  MessageToast.show("Error al eliminar catálogo: " + err.message);
                 });
-              }
-            }.bind(this),
+            }
           });
         },
 
@@ -340,53 +421,65 @@ sap.ui.define(
           var oData = oContext.getObject();
           var sAction = bActivate ? "activate" : "delete";
           var sStatusMessage = bActivate ? "activado" : "desactivado";
-
           // Obtener el modelo y los datos actuales
           var oTableModel = this.getView().getModel();
           var aData = oTableModel.getProperty("/value") || [];
 
-          $.ajax({
-            url:
-              "http://localhost:4004/api/sec/logicalLabel?status=" +
-              sAction +
-              "&&labelID=" +
-              oData.LABELID,
-            method: "POST",
-            contentType: "application/json",
-            success: function () {
+          var that = this;
+
+          console.log(sAction);
+
+          fetch("env.json")
+            .then(function (response) {
+                return response.json();
+            })
+            // eslint-disable-next-line consistent-return
+            .then(function (env) {
+              if (sAction === "delete"){
+                return fetch(env.API_LABELS_URL_BASE + "dellabellogically?LABELID=" + oData.LABELID, {
+                    method: "POST"
+                });
+              }else if (sAction === "activate"){
+                return fetch(env.API_LABELS_URL_BASE + "actlabellogically?LABELID=" + oData.LABELID, {
+                    method: "POST"
+                });
+              }
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error("Error");
+                }
               // Actualizar el estado localmente
               var index = aData.findIndex(
                 (item) => item.LABELID === oData.LABELID
               );
-              if (index !== -1) {
-                // Actualizar solo el campo ACTIVED
-                aData[index].DETAIL_ROW.ACTIVED = bActivate;
+                if (index !== -1) {
+                  // Actualizar solo el campo ACTIVED
+                  aData[index].DETAIL_ROW.ACTIVED = bActivate;
 
-                // Actualizar el modelo
-                oTableModel.setProperty("/value", aData);
-              }
+                  // Actualizar el modelo
+                  oTableModel.setProperty("/value", aData);
+                }
 
-              // Actualizar visibilidad de botones según estado
-              this.byId("activateButton").setVisible(!bActivate);
-              this.byId("activateButton").setEnabled(!bActivate);
-              this.byId("deactivateButton").setVisible(bActivate);
-              this.byId("deactivateButton").setEnabled(bActivate);
+                // Actualizar visibilidad de botones según estado
+                that.byId("activateButton").setVisible(!bActivate);
+                that.byId("activateButton").setEnabled(!bActivate);
+                that.byId("deactivateButton").setVisible(bActivate);
+                that.byId("deactivateButton").setEnabled(bActivate);
 
-              MessageToast.show(
-                "Registro " + oData.LABELID + ": " + sStatusMessage
-              );
-            }.bind(this),
-            error: function (error) {
-              MessageToast.show("Error: " + error.responseText);
-            }.bind(this),
-          });
+                MessageToast.show(
+                  "Registro " + oData.LABELID + ": " + sStatusMessage
+                );
+            })
+            .catch(function (err) {
+                MessageToast.show("Error al eliminar catálogo: " + err.message);
+            });
         },
 
         // ---------------------------------------------------- FIN ELIMINADO/ACTIVADO LOGICO
 
         _refreshCatalogTable: function () {
           // Implementa la lógica para refrescar los datos de la tabla
-          // @ts-ignore
           var oTable = this.byId("catalogTable");
           var oModel = this.getView().getModel();
 
@@ -400,44 +493,77 @@ sap.ui.define(
         },
 
         // ---------------------------------------------------- PARA CARGAR VALORES EN EL PANEL DERECHO
-
         onItemPress: function (oEvent) {
           var oItem = oEvent.getParameter("listItem");
           var oContext = oItem.getBindingContext();
           var oSelectedData = oContext.getObject(); // Obtiene los datos del ítem seleccionado
-
-          var sLabelID = oSelectedData.LABELID;
-          var sUrl =
-            "http://localhost:4004/api/sec/valuesCRUD?procedure=get&labelID=" +
-            encodeURIComponent(sLabelID);
-          var that = this;
-
-          $.ajax({
-            url: sUrl,
-            method: "GET",
-            dataType: "json",
-            success: function (response) {
-              var oValuesView = that.byId("XMLViewValues");
-              if (oValuesView) {
-                oValuesView.loaded().then(function () {
-                  var oController = oValuesView.getController();
-                  if (oController && oController.loadValues) {
-                    // Pasa los valores y también el ítem seleccionado
-                    oController.loadValues(response.value || []);
-
-                    // Actualiza el selectedValue en el modelo values
-                    oValuesView
-                      .getModel("values")
-                      .setProperty("/selectedValue", oSelectedData);
-                  }
-                });
-              }
-            },
-            error: function () {
-              MessageToast.show("Error al cargar valores");
-            },
+          // var that = this;
+          // var sLabelID = oSelectedData.LABELID;
+          
+          // Codigo nuevo que lee los valores desde el array que se carga al principio de la vista
+          var aFilteredValues = this._aAllValues.filter(function (oValue) {
+            return oValue.LABELID === oSelectedData.LABELID;
           });
+          var oAllLabels = this.getView().getModel().getProperty("/value");
+          var aAllValues = this._aAllValues;
+          var oValuesView = this.byId("XMLViewValues");
+          if (oValuesView) {
+            oValuesView.loaded().then(
+              function () {
+                var oController = oValuesView.getController();
+                if (oController && oController.loadValues) {
+                  // Pasar los valores filtrados
+                  oController.loadValues(
+                    aFilteredValues,
+                    aAllValues,
+                    oAllLabels
+                  );
 
+                  // Actualizar el selectedValue en el modelo "values"
+                  oValuesView
+                    .getModel("values")
+                    .setProperty("/selectedValue", oSelectedData);
+                  oValuesView
+                    .getModel("values")
+                    .setProperty("/AllValues", aAllValues);
+                  oValuesView
+                    .getModel("values")
+                    .setProperty("/AllLabels", oAllLabels);
+                }
+              }.bind(this)
+            );
+          }
+
+          // Codigo antiguo que cargaba la api de GET VALUES BY ID
+          // fetch("env.json")
+          //   .then(res => res.json())
+          //   .then(env => fetch(env.API_VALUES_URL_BASE + "getallvalues?LABELID=" + sLabelID))
+          //   .then(res => res.json())
+          //   .then(data => {
+          //     var oValuesView = that.byId("XMLViewValues");
+          //     if (oValuesView) {
+          //       oValuesView.loaded().then(function () {
+          //         var oController = oValuesView.getController();
+          //         if (oController && oController.loadValues) {
+          //           // Pasa los valores y también el ítem seleccionado
+          //           oController.loadValues(data.value || []);
+
+          //           // Actualiza el selectedValue en el modelo values
+          //           oValuesView
+          //             .getModel("values")
+          //             .setProperty("/selectedValue", oSelectedData);
+          //         }
+          //       });
+          //     }
+          //   })
+          //   .catch(err => {
+          //       if(err.message === ("Cannot read properties of undefined (reading 'setModel')")){
+          //           return;
+          //       }else{
+          //           MessageToast.show("Error al cargar usuarios: " + err.message);
+          //       }      
+          //   });   
+                
           // Expandir el panel derecho
           var oSplitter = this.byId("mainSplitter");
           var oDetailPanel = this.byId("detailPanel");

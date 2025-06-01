@@ -9,24 +9,77 @@
         resizable="true"
     >
         <VBox id="AddUserDialogVbox" class="sapUiSmallMargin">
+
             <Input id="inputUserId" placeholder="ID de Usuario"/>
 
-            <Input id="inputUsername" placeholder="Nombre Completo"/>
+            <!-- Nuevo: Campo PASSWORD -->
+            <Input id="inputUserPassword" placeholder="Contraseña" type="Password" />
             
-            <Input id="inputUserPhoneNumber" placeholder="Número telefónico"/>
+            <!-- Nuevo: Campo ALIAS -->
+            <Input id="inputUserAlias" placeholder="Alias"/>
 
-            <Input id="inputUserEmail" placeholder="Correo Electrónico"/>
+            <!-- Nuevo: Campos FIRSTNAME y LASTNAME -->
+            <Input id="inputUserFirstName" placeholder="Primer Nombre"/>
+            
+            <Input id="inputUserLastName" placeholder="Apellido"/>
 
-            <DatePicker id="inputUserBirthdayDate" placeholder="Fecha de nacimiento"/>
+            <!-- Nuevo: Campo EMPLOYEEID -->
+            <Input id="inputEmployeeId" placeholder="ID de Empleado"/>
+
+            <!-- Nuevo: Campo EXTENSION -->
+            <Input id="inputExtension" placeholder="Extensión"/>
+
+            <!-- Campo existente: Número telefónico -->
+            <!-- <Input id="inputUserPhoneNumber" placeholder="Número telefónico"/> -->
+            <Input
+                id="inputUserPhoneNumber"
+                placeholder="Teléfono"
+                value="{newUserModel>/PHONENUMBER}"
+                liveChange="onPhoneInputChange"
+                class = "phoneMaskedInput"
+                maxLength="12" 
+            />
+
+
+
+            <!-- Campo existente: Correo Electrónico -->
+            <!-- <Input id="inputUserEmail" placeholder="Correo Electrónico"/> -->
+
+            <HBox justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom">
+                <Input
+                    id="inputEmailUser"
+                    width="8rem"
+                    placeholder="usuario"
+                    liveChange="onEmailPartChanged" />
+                    
+                <Text text="@" class="sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
+
+                <Input
+                    id="inputEmailDomain"
+                    width="10rem"
+                    placeholder="dominio.com"
+                    liveChange="onEmailPartChanged" />
+            </HBox>
+
+            <!-- Campo existente: Fecha de nacimiento -->
+            <DatePicker id="inputUserBirthdayDate" placeholder="Fecha de nacimiento" displayFormat="long" />
+
+            <!-- Nuevo: Campo AVATAR (URL del avatar o similar) -->
+            <Input id="inputUserAvatar" placeholder="URL del Avatar" />
 
             <ComboBox id="comboBoxCompanies" items="{companiesModel>/companies}" selectionChange="onCompanySelected" placeholder="Compañía">
-                <core:Item key="{companiesModel>VALUEID}" text="{companiesModel>VALUE}" />
+                <core:Item key="{companiesModel>VALUEID}" text="{companiesModel>DESCRIPTION}" />
             </ComboBox>
 
             
-            <ComboBox id="comboBoxCedis" items="{cedisModel>/cedis}" selectionChange="onCediSelected" placeholder="Departamento">
-                <core:Item key="{cedisModel>VALUEID}" text="{cedisModel>VALUE}" />
+            <ComboBox id="comboBoxCedis" items="{cedisModel>/cedis}" selectionChange="onCediSelected" placeholder="Sucursal">
+                <core:Item key="{cedisModel>VALUEID}" text="{cedisModel>DESCRIPTION}" />
             </ComboBox>
+
+            <ComboBox id="comboBoxDeptos" items="{deptosModel>/deptos}" selectionChange="onDeptoSelected" placeholder="Departamento">
+                <core:Item key="{deptosModel>VALUEID}" text="{deptosModel>DESCRIPTION}" />
+            </ComboBox>
+
 
             <ComboBox id="comboBoxRoles" items="{rolesModel>/roles}" selectionChange="onRoleSelected" placeholder="Selecciona un Rol">
                 <core:Item key="{rolesModel>ROLEID}" text="{rolesModel>ROLENAME}" />
@@ -38,15 +91,36 @@
             </VBox>
             
             <Input id="inputUserFunction" placeholder="Función que ejerce"/>
+                            
+            <!-- Grupo: Datos de dirección -->
+            <Title text="Dirección" level="H4" class="sapUiSmallMarginTop"/>
+            
+            <!-- Nuevo: Calle -->
+            <Input id="inputStreetUser" placeholder="Calle"/>
+            
+            <!-- Nuevo: Código Postal -->
+            <Input id="inputPostalCodeUser" placeholder="Código Postal"/>
+            
+            <!-- Nuevo: Ciudad -->
+            <Input id="inputCityUser" placeholder="Ciudad"/>
+            
+            <!-- Nuevo: Región -->
+            <Input id="inputRegionUser" placeholder="Región"/>
+            
+            <!-- Nuevo: Estado -->
+            <Input id="inputStateUser" placeholder="Estado"/>
+            
+            <!-- Nuevo: País -->
+            <Input id="inputCountryUser" placeholder="País"/>
 
         </VBox>
 
-        <beginButton>
-            <Button id="SaveNewUser" text="Guardar" type="Emphasized" press="onSaveUser" />
-        </beginButton>
+                <beginButton>
+                    <Button id="SaveNewUser" text="Guardar" type="Emphasized" press="onSaveUser" />
+                </beginButton>
 
-        <endButton>
-            <Button id="CancelSaveUser" text="Cancelar" press="onCancelUser" />
-        </endButton>
+                <endButton>
+                    <Button id="CancelSaveUser" text="Cancelar" press="onCancelUser" />
+                </endButton>
     </Dialog>
 </core:FragmentDefinition>

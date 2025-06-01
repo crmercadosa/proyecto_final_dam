@@ -4,14 +4,15 @@
   xmlns:core="sap.ui.core"
   xmlns:layout="sap.ui.layout.form"
   xmlns:tl="sap.ui.table"
-  xmlns:rowmodes="sap.ui.table.rowmodes"
   >
 
 
 
     <m:Toolbar design="Transparent" class="customRoleToolbar">
       <m:Button text="Crear" icon="sap-icon://add" type="Accept" press=".onOpenDialog" />
-
+      <m:Button text="Editar" type="Emphasized" icon="sap-icon://edit" press=".onUpdateRole" />
+      <m:Button text="Desactivar" icon="sap-icon://delete" press=".onDesactivateRole" type="Attention" />
+      <m:Button text="Eliminar" icon="sap-icon://delete" type="Reject" press=".onDeleteRole" />
       <m:SearchField id="searchRoleName" width="25rem" placeholder="Buscar roles..." liveChange=".onMultiSearch" />
 
       <m:ToolbarSpacer />
@@ -20,11 +21,17 @@
     </m:Toolbar>
 
 
-    <tl:Table id="rolesTable" rows="{roles>/value}" selectionMode="Single" selectionBehavior="RowOnly" rowSelectionChange=".onRoleSelected" enableColumnReordering="true" alternateRowColors="true" rowActionCount="2" width="100%">
-
-      <tl:rowMode>
-        <rowmodes:Fixed rowCount="20" />
-      </tl:rowMode>
+    <tl:Table 
+      id="rolesTable" 
+      rows="{roles>/value}" 
+      selectionMode="Single" 
+      selectionBehavior="RowOnly" 
+      rowSelectionChange=".onRoleSelected" 
+      enableColumnReordering="true" 
+      alternateRowColors="true" 
+      rowActionCount="2" 
+      width="100%"
+      rowMode="{ui>/rowMode}">
 
       <tl:columns>
         <tl:Column sortProperty="ROLEID" width="20%">
@@ -55,8 +62,8 @@
       </tl:columns>
 
       <tl:footer>
-        <m:OverflowToolbar id="OverFlowUsersManage">
-          <m:Label id="OberflowLabelUsersManage" text="Modo de filas" />
+        <m:OverflowToolbar id="OverFlowRolesManage">
+          <m:Label id="OberflowLabelRolesManage" text="Modo de filas" />
           <m:SegmentedButton selectedKey="{ui>/rowMode}" id="rowModeSelector">
             <m:items>
               <m:SegmentedButtonItem id="IdUsersFixedButton" key="Fixed" icon="sap-icon://locked" />
@@ -66,4 +73,5 @@
         </m:OverflowToolbar>
       </tl:footer>
     </tl:Table>
+
 </mvc:View>

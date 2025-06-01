@@ -9,15 +9,7 @@
 
   <m:VBox class="sapUiContentPadding">
 
-    <!-- 🔹 Encabezado con botones -->
-    <m:Toolbar>
-      <m:Title text="Detalles de rol: {selectedRole>/ROLENAME}" level="H2" />
-      <m:ToolbarSpacer />
-      <m:Button text="Editar" type="Emphasized" icon="sap-icon://edit" press=".onUpdateRole" />
-      <m:Button text="Desactivar" icon="sap-icon://delete" press=".onDesactivateRole" type="Attention" />
-      <m:Button text="Eliminar" icon="sap-icon://delete" type="Reject" press=".onDeleteRole" />
-    </m:Toolbar>
-
+    
     <!-- 🔹 Información del rol -->
     <m:VBox id="roleInfoBox" class="sapUiSmallMargin">
       <m:Text id="roleIdText" text="ID: {selectedRole>/ROLEID}" />
@@ -30,6 +22,14 @@
       headerText="Procesos y Privilegios"
       expandable="false"
       class="sapUiMediumMarginTop">
+
+      <m:headerToolbar>
+        <m:Toolbar>
+          <m:Title text="Procesos y Privilegios" level="H2"/>
+          <m:ToolbarSpacer/>
+          <m:Button text="Catálogos" icon="sap-icon://list" type="Emphasized" design="Transparent" press=".onNavToCatalogs" class="catalogsHeaderButton"/>
+        </m:Toolbar>
+      </m:headerToolbar>
 
       <tl:Table
         id="processesTable"
@@ -45,34 +45,35 @@
         </tl:rowMode>
 
         <tl:columns>
+          <!-- Proceso -->
           <tl:Column>
             <m:Label text="Proceso" />
             <tl:template>
               <m:Text text="{selectedRole>PROCESSNAME}" />
             </tl:template>
           </tl:Column>
+          <!-- Privilegios -->
           <tl:Column>
-            <m:Label text="Aplicación" />
+            <m:Label text="Privilegios" />
             <tl:template>
-              <m:Text text="{selectedRole>APPLICATIONNAME}" />
+              <m:Text text="{
+                path: 'selectedRole>PRIVILEGES',
+                formatter: '.formatPrivileges'
+              }" />
             </tl:template>
           </tl:Column>
+          <!-- Vista -->
           <tl:Column>
             <m:Label text="Vista" />
             <tl:template>
               <m:Text text="{selectedRole>VIEWNAME}" />
             </tl:template>
           </tl:Column>
+          <!-- Aplicación -->
           <tl:Column>
-            <m:Label text="Privilegios" />
+            <m:Label text="Aplicación" />
             <tl:template>
-              <m:HBox wrap="Wrap">
-                <m:FlexBox wrap="Wrap" items="{selectedRole>PRIVILEGES}">
-                  <m:items>
-                    <m:ObjectStatus text="{selectedRole>PRIVILEGENAME}" class="sapUiTinyMarginEnd sapUiTinyMarginTop" />
-                  </m:items>
-                </m:FlexBox>
-              </m:HBox>
+              <m:Text text="{selectedRole>APPLICATIONNAME}" />
             </tl:template>
           </tl:Column>
         </tl:columns>
@@ -84,6 +85,14 @@
       headerText="Usuarios con este Rol"
       class="sapUiMediumMarginTop"
       expandable="false">
+
+      <m:headerToolbar>
+        <m:Toolbar>
+          <m:Title text="Usuarios con este Rol" level="H2"/>
+          <m:ToolbarSpacer/>
+          <m:Button text="Usuarios" icon="sap-icon://employee" type="Emphasized" design="Transparent" press=".onNavToUsers" class="usersHeaderButton"/>
+        </m:Toolbar>
+      </m:headerToolbar>
 
       <tl:Table
         id="usersTable"
