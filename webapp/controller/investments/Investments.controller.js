@@ -64,7 +64,7 @@ sap.ui.define(
 
           // 5. Initialize Strategy Analysis Model
           var oStrategyAnalysisModelData = {
-            balance: 1000,
+            balance: 50000,
             stock: 1,
             longSMA: 200,
             shortSMA: 50,
@@ -95,7 +95,7 @@ sap.ui.define(
           //await this.loadSimulationsOnce("historyModel");
           this.loadSimulationsOnce();
 
-          // 7. Initialize Strategy Result Model
+          // 7. Initialize Strategy Result Model and Simulation Summary Model
           var oStrategyResultModel = new JSONModel({
             hasResults: false,
             idSimulation: null,
@@ -112,6 +112,8 @@ sap.ui.define(
             startDate: null,
             endDate: null,
             TOTAL_BOUGHT_UNITS: 0,
+            TOTAL_PRICE_SOLD_UNITS: 0,
+            TOTAL_PRICE_BROUGHT_UNITS: 0,
             TOTAL_SOLD_UNITS: 0,
             REMAINING_UNITS: 0,
             FINAL_CASH: 0,
@@ -121,6 +123,19 @@ sap.ui.define(
             PERCENTAGE_RETURN: 0, // Nueva propiedad
           });
           this.getView().setModel(oStrategyResultModel, "strategyResultModel");
+
+          const oSimSummaryModel = new sap.ui.model.json.JSONModel({
+            totalSimulations: 0,
+            simulations: [],
+            generalInitialBalance: oStrategyAnalysisModelData.balance || 0,
+            accumulatedFinalBalance: 0,
+            accumulatedProfit: 0,
+            accumulatedPercentageReturn: 0,
+            totalBoughtUnits: 0,
+            totalSoldUnits: 0
+          });
+
+          this.getView().setModel(oSimSummaryModel, "simulationSummaryModel");
 
           // 8. Set default date range for analysis
           this._setDefaultDates();
@@ -523,6 +538,7 @@ sap.ui.define(
               const aSignals = data.value?.[0]?.SIGNALS || [];
               const oSummary = data.value?.[0]?.SUMMARY || {}; // Obtener el objeto SUMMARY
               const simData = data.value?.[0] || [];
+              const saldoInicial = oStrategyModel.getProperty("/stock");
               // Update result model with transformed data for chart and table
               oResultModel.setData({
                 hasResults: true,
@@ -537,14 +553,56 @@ sap.ui.define(
                 symbol: sSymbol,
                 startDate: oStrategyModel.getProperty("/startDate"),
                 endDate: oStrategyModel.getProperty("/endDate"),
+                INITIAL_VALUE: saldoInicial,
                 TOTAL_BOUGHT_UNITS: oSummary.TOTAL_BOUGHT_UNITS || 0,
+                TOTAL_PRICE_BROUGHT_UNITS: oSummary.TOTAL_PRICE_BROUGHT_UNITS || 0,
                 TOTAL_SOLD_UNITS: oSummary.TOTAL_SOLD_UNITS || 0,
+                TOTAL_PRICE_SOLD_UNITS: oSummary.TOTAL_PRICE_SOLD_UNITS || 0,
                 REMAINING_UNITS: oSummary.REMAINING_UNITS || 0,
                 FINAL_CASH: oSummary.FINAL_CASH || 0,
                 FINAL_VALUE: oSummary.FINAL_VALUE || 0,
                 FINAL_BALANCE: oSummary.FINAL_BALANCE || 0,
                 REAL_PROFIT: oSummary.REAL_PROFIT || 0,
                 PERCENTAGE_RETURN: oSummary.PERCENTAGE_RETURN || 0,
+              });
+
+              const oSimSummaryModel = oView.getModel("simulationSummaryModel");
+
+              let aSimulations = oSimSummaryModel.getProperty("/simulations") || [];
+
+              aSimulations.push({
+                simulationName:
+                  oStrategyModel
+                    .getProperty("/strategies")
+                    .find((s) => s.key === strategy)?.text || strategy,
+                symbol: sSymbol,
+                FINAL_BALANCE: oSummary.FINAL_BALANCE || 0,
+                REAL_PROFIT: oSummary.REAL_PROFIT || 0,
+                PERCENTAGE_RETURN: oSummary.PERCENTAGE_RETURN || 0,
+                FINAL_CASH: oSummary.FINAL_CASH || 0,
+                FINAL_VALUE: oSummary.FINAL_VALUE || 0,
+                TOTAL_BOUGHT_UNITS: oSummary.TOTAL_BOUGHT_UNITS || 0,
+                TOTAL_SOLD_UNITS: oSummary.TOTAL_SOLD_UNITS || 0,
+                REMAINING_UNITS: oSummary.REMAINING_UNITS || 0,
+              });
+
+              const accumulatedProfit = aSimulations.reduce((acc, sim) => acc + (sim.REAL_PROFIT || 0), 0);
+              const accumulatedFinalBalance = aSimulations.reduce((acc, sim) => acc + (sim.FINAL_BALANCE || 0), 0);
+              const generalInitialBalance = oSimSummaryModel.getProperty("/generalInitialBalance");
+              const totalBoughtUnits = aSimulations.reduce((acc, sim) => acc + (sim.TOTAL_BOUGHT_UNITS || 0), 0);
+              const totalSoldUnits = aSimulations.reduce((acc, sim) => acc + (sim.TOTAL_SOLD_UNITS || 0), 0);
+              const accumulatedPercentageReturn = generalInitialBalance ? (accumulatedProfit / generalInitialBalance) * 100
+                : 0;
+
+              oSimSummaryModel.setData({
+                totalSimulations: aSimulations.length,
+                simulations: aSimulations,
+                generalInitialBalance,
+                accumulatedFinalBalance,
+                accumulatedProfit,
+                accumulatedPercentageReturn,
+                totalBoughtUnits,
+                totalSoldUnits
               });
 
               const oHistoryModel = this.getView().getModel("historyModel");
@@ -1371,26 +1429,16 @@ sap.ui.define(
          */
         onToggleRangeDateFilter: function () {
           const oPanelDates = sap.ui.core.Fragment.byId("myFragmentId", "rangeDatesFilter");
-          const oPanelInv = sap.ui.core.Fragment.byId("myFragmentId", "rangeInversionFilter");
-          const oPanelRent = sap.ui.core.Fragment.byId("myFragmentId", "rangeRentFilter");
 
-          if (!oPanelDates || !oPanelInv || !oPanelRent) {
-            console.warn("Alguno de los paneles no fue encontrado.");
+          if (!oPanelDates) {
+            console.error("No se encontró el panel con ID 'rangeDatesFilter'");
             return;
           }
 
-          const bCurrentVisible = oPanelDates.getVisible(); // Ver si está visible actualmente
-
-          // Cierra todos
-          oPanelDates.setVisible(false);
-          oPanelInv.setVisible(false);
-          oPanelRent.setVisible(false);
-
-          // Abre solo si estaba oculto
-          if (!bCurrentVisible) {
-            oPanelDates.setVisible(true);
-          }
+          const bCurrentVisible = oPanelDates.getVisible();
+          oPanelDates.setVisible(!bCurrentVisible);
         },
+
 
 
         onToggleRangeInversionFilter: function () {

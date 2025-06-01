@@ -99,3 +99,20 @@
     width: 100%;
     display: block;
 }
+
+.dotted-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+}
+
+.dotted-row label {
+  white-space: nowrap;
+}
+
+.dotted-row .dots {
+  border-bottom: 1px dotted #ccc;
+  margin: 0 5px;
+  height: 1px;
+  width: 100%;
+}

@@ -341,44 +341,59 @@ sap.ui.define(
           var oData = oContext.getObject();
           var that = this;
 
-          MessageBox.confirm("¿Está seguro de eliminar este registro?", {
+          // Filtrar values asociados al label
+          var aAssociatedValues = (this._aAllValues || []).filter(function (value) {
+            return value.LABELID === oData.LABELID;
+          });
+
+          var sMessage = "¿Está seguro de eliminar este registro?";
+          if (aAssociatedValues.length > 0) {
+            sMessage += "\nSe eliminarán todos los valores asociados a este catalogo.";
+          }
+
+          MessageBox.confirm(sMessage, {
             actions: [MessageBox.Action.YES, MessageBox.Action.NO],
             onClose: function (sAction) {
-              if (sAction === MessageBox.Action.YES) {
-                fetch("env.json")
-                  .then(function (response) {
-                      return response.json();
-                  })
-                  .then(function (env) {
-                      return fetch(env.API_LABELS_URL_BASE + "dellabelphysically?LABELID=" + oData.LABELID, {
-                          method: "POST"
-                      });
-                  })
-                  .then(function (response) {
-                      if (!response.ok) {
-                          throw new Error("Error en la eliminación del catalogo");
-                      }
+              if (sAction !== MessageBox.Action.YES) return;
 
-                      MessageToast.show("Catalogo eliminado");
-
-                      // Actualización local del modelo
-                      var oTableModel = that.getView().getModel();
-                      var aData = oTableModel.getProperty("/value") || [];
-
-                      // Encontrar y eliminar el registro
-                      var index = aData.findIndex(
-                        (item) => item._id === oData._id
-                      );
-                      if (index !== -1) {
-                        aData.splice(index, 1);
-                        oTableModel.setProperty("/value", aData);
-                      }
-                  })
-                  .catch(function (err) {
-                      MessageToast.show("Error al eliminar catálogo: " + err.message);
+              fetch("env.json")
+                .then(function (response) {
+                  return response.json();
+                })
+                .then(function (env) {
+                  return fetch(env.API_LABELS_URL_BASE + "dellabelphysically?LABELID=" + oData.LABELID, {
+                    method: "POST"
                   });
-              }
-            }.bind(this),
+                })
+                .then(function (response) {
+                  if (!response.ok) {
+                    throw new Error("Error en la eliminación del catálogo");
+                  }
+
+                  MessageToast.show("Catálogo eliminado");
+
+                  // Eliminar del modelo local
+                  var oTableModel = that.getView().getModel();
+                  var aData = oTableModel.getProperty("/value") || [];
+
+                  var index = aData.findIndex(function (item) {
+                    return item._id === oData._id;
+                  });
+                  if (index !== -1) {
+                    aData.splice(index, 1);
+                    oTableModel.setProperty("/value", aData);
+                  }
+
+                  // También podrías actualizar this._aAllValues aquí si quieres sincronizarlo
+                  that._aAllValues = that._aAllValues.filter(function (value) {
+                    return value.LABELID !== oData.LABELID;
+                  });
+
+                })
+                .catch(function (err) {
+                  MessageToast.show("Error al eliminar catálogo: " + err.message);
+                });
+            }
           });
         },
 

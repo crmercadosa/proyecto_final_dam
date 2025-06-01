@@ -28,9 +28,34 @@
             <!-- Nuevo: Campo EXTENSION -->
             <Input id="inputEditExtension" placeholder="Extensión"/>
 
-            <Input id="inputEditUserPhoneNumber" placeholder="Número telefónico"/>
+            <!-- <Input id="inputUserPhoneNumber" placeholder="Número telefónico"/> -->
+            <Input
+                id="inputEditUserPhoneNumber"
+                placeholder="Teléfono"
+                value="{newUserModel>/PHONENUMBER}"
+                liveChange="onPhoneInputChange"
+                class = "phoneMaskedInput"
+                maxLength="12" 
+            />
 
-            <Input id="inputEditUserEmail" placeholder="Correo Electrónico"/>
+            <!-- Campo existente: Correo Electrónico -->
+            <!-- <Input id="inputUserEmail" placeholder="Correo Electrónico"/> -->
+
+            <HBox justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom">
+                <Input
+                    id="inputEditEmailUser"
+                    width="8rem"
+                    placeholder="usuario"
+                    liveChange="onEmailPartChanged" />
+                    
+                <Text text="@" class="sapUiTinyMarginBegin sapUiTinyMarginEnd"/>
+
+                <Input
+                    id="inputEditEmailDomain"
+                    width="10rem"
+                    placeholder="dominio.com"
+                    liveChange="onEmailPartChanged" />
+            </HBox>
 
             <DatePicker id="inputEditUserBirthdayDate" placeholder="Fecha de nacimiento" displayFormat="long" />
 
@@ -39,12 +64,16 @@
 
 
             <ComboBox id="comboBoxEditCompanies" items="{companiesModel>/companies}" selectionChange="onCompanySelected" placeholder="Compañía">
-                <core:Item key="{companiesModel>VALUEID}" text="{companiesModel>VALUE}" />
+                <core:Item key="{companiesModel>VALUEID}" text="{companiesModel>DESCRIPTION}" />
             </ComboBox>
 
             
-            <ComboBox id="comboBoxEditCedis" items="{cedisModel>/cedis}" selectionChange="onCediSelected" placeholder="Departamento">
-                <core:Item key="{cedisModel>VALUEID}" text="{cedisModel>VALUE}" />
+            <ComboBox id="comboBoxEditCedis" items="{cedisModel>/cedis}" selectionChange="onCediSelected" placeholder="Sucursal">
+                <core:Item key="{cedisModel>VALUEID}" text="{cedisModel>DESCRIPTION}" />
+            </ComboBox>
+
+            <ComboBox id="comboBoxEditDeptos" items="{deptosModel>/deptos}" selectionChange="onDeptoSelected" placeholder="Departamento">
+                <core:Item key="{deptosModel>VALUEID}" text="{deptosModel>DESCRIPTION}" />
             </ComboBox>
 
 

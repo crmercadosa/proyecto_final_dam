@@ -33,7 +33,7 @@
             <!-- <Input id="inputUserPhoneNumber" placeholder="Número telefónico"/> -->
             <Input
                 id="inputUserPhoneNumber"
-                placeholder=" Numero telefónico"
+                placeholder="Teléfono"
                 value="{newUserModel>/PHONENUMBER}"
                 liveChange="onPhoneInputChange"
                 class = "phoneMaskedInput"
@@ -67,27 +67,17 @@
             <!-- Nuevo: Campo AVATAR (URL del avatar o similar) -->
             <Input id="inputUserAvatar" placeholder="URL del Avatar" />
 
-            <ComboBox id="comboBoxCompanies"
-                items="{companyModel>/companies}"
-                selectionChange="onCompanySelected"
-                placeholder="Compañía"
-                selectedKey="{newUserModel>/COMPANYID}">
-            <core:Item key="{companyModel>COMPANYID}" text="{companyModel>NAME}" />
+            <ComboBox id="comboBoxCompanies" items="{companiesModel>/companies}" selectionChange="onCompanySelected" placeholder="Compañía">
+                <core:Item key="{companiesModel>VALUEID}" text="{companiesModel>DESCRIPTION}" />
             </ComboBox>
 
-            <ComboBox id="comboBoxCedis"
-                items="{cediModel>/cedis}"
-                selectionChange="onCediSelected"
-                placeholder="CEDI"
-                selectedKey="{newUserModel>/CEDIID}">
-            <core:Item key="{cediModel>CEDI_ID}" text="{cediModel>NAME}" />
+            
+            <ComboBox id="comboBoxCedis" items="{cedisModel>/cedis}" selectionChange="onCediSelected" placeholder="Sucursal">
+                <core:Item key="{cedisModel>VALUEID}" text="{cedisModel>DESCRIPTION}" />
             </ComboBox>
 
-            <ComboBox id="comboBoxDeptos"
-                items="{deptoModel>/deptos}"
-                placeholder="Departamento"
-                selectedKey="{newUserModel>/DEPTID}">
-            <core:Item key="{deptoModel>DEPT_ID}" text="{deptoModel>NAME}" />
+            <ComboBox id="comboBoxDeptos" items="{deptosModel>/deptos}" selectionChange="onDeptoSelected" placeholder="Departamento">
+                <core:Item key="{deptosModel>VALUEID}" text="{deptosModel>DESCRIPTION}" />
             </ComboBox>
 
 

@@ -27,82 +27,33 @@
                     }" />
                 </HBox>
             </VBox>
-            <!-- 
-            <VBox class="sapUiSmallMargin">
-                <Title text="Estadísticas de Trading" titleStyle="H4" />
-                <HBox justifyContent="SpaceBetween">
-                    <Label text="Total Operaciones:" class="sapUiTinyMarginEnd" />
-                    <ObjectNumber number="{strategyResultModel>/signals/length}" unit="ops" />
-                </HBox>
-                <HBox justifyContent="SpaceBetween">
-                    <Label text="Compras:" class="sapUiTinyMarginEnd" />
-                    <Text
-                        text="{
-                        parts: ['strategyResultModel>/signals', 'buy'],
-                        formatter: '.formatSignalCount'
-                    }"
-                        class="successText" />
-                </HBox>
-                <HBox justifyContent="SpaceBetween">
-                    <Label text="Ventas:" class="sapUiTinyMarginEnd" />
-                    <Text
-                        text="{
-                        parts: ['strategyResultModel>/signals', 'sell'],
-                        formatter: '.formatSignalCount'
-                    }"
-                        class="errorText" />
-                </HBox>
-                <HBox justifyContent="SpaceBetween">
-                    <Label text="Stop Loss:" class="sapUiTinyMarginEnd" />
-                    <Text
-                        text="{
-                        path: 'strategyResultModel>/signals',
-                        formatter: '.formatStopLossCount'
-                    }"
-                        class="warningText" />
-                </HBox>
-            </VBox> -->
-
-            <!-- 
-            <VBox class="sapUiSmallMargin">
-                <Title text="Última Operación" titleStyle="H4" />
-                <HBox justifyContent="SpaceBetween">
-                    <Label text="Tipo:" class="sapUiTinyMarginEnd" />
-                    <ObjectStatus
-                        text="{strategyResultModel>/signals/0/type}"
-                        state="{
-                            path: 'strategyResultModel>/signals/0/type',
-                            formatter: '.formatSignalState'
-                        }" />
-                </HBox>
-                <HBox justifyContent="SpaceBetween">
-                    <Label text="Precio:" class="sapUiTinyMarginEnd" />
-                    <Text
-                        text="{
-                        path: 'strategyResultModel>/signals/0/price',
-                        formatter: '.formatSignalPrice'
-                    }" />
-                </HBox>
-                <HBox justifyContent="SpaceBetween">
-                    <Label text="Razón:" class="sapUiTinyMarginEnd" />
-                    <Text text="{strategyResultModel>/signals/0/reasoning}" wrapping="true" />
-                </HBox>
-            </VBox>
-Última Señal -->
 
             <!--Resuen
-            financiero-->
+            financiero Por simulacion-->
             <VBox class="sapUiSmallMargin">
-                <Title text="Resumen Financiero" titleStyle="H4" />
-
+                <Title text="Resumen Financiero De la simulación" titleStyle="H4" />
+                <HBox justifyContent="SpaceBetween">
+                    <Label text="Saldo inicial de simulación:" class="sapUiTinyMarginEnd" />
+                    <Text text="{strategyResultModel>/INITIAL_VALUE}" />
+                </HBox>
                 <HBox justifyContent="SpaceBetween">
                     <Label text="Acciones Compradas:" class="sapUiTinyMarginEnd" />
                     <Text text="{strategyResultModel>/TOTAL_BOUGHT_UNITS}" />
                 </HBox>
 
                 <HBox justifyContent="SpaceBetween">
+                    <Label text="Precio de acciones compradas:" class="sapUiTinyMarginEnd" />
+                    <ObjectNumber number="{strategyResultModel>/TOTAL_PRICE_BROUGHT_UNITS}" unit="USD"/>
+                </HBox>
+
+                <HBox justifyContent="SpaceBetween">
                     <Label text="Acciones Vendidas:" class="sapUiTinyMarginEnd" />
                     <Text text="{strategyResultModel>/TOTAL_SOLD_UNITS}" />
+                </HBox>
+
+                <HBox justifyContent="SpaceBetween">
+                    <Label text="Precio de acciones vendidas:" class="sapUiTinyMarginEnd" />
+                    <ObjectNumber number="{strategyResultModel>/TOTAL_PRICE_SOLD_UNITS}" unit="USD" />
                 </HBox>
 
                 <HBox justifyContent="SpaceBetween">
@@ -129,6 +80,44 @@
                     <Label text="Ganancia Real:" class="sapUiTinyMarginEnd" />
                     <ObjectNumber number="{strategyResultModel>/REAL_PROFIT}" unit="USD"
                         state="Success" />
+                </HBox>
+                <HBox justifyContent="SpaceBetween">
+                <Label text="Rendimiento de la simulación (%):" />
+                <ObjectNumber number="{strategyResultModel>/PERCENTAGE_RETURN}" unit="%" />
+                </HBox>
+            </VBox>
+
+
+            <!--Resumen Financiero General de las simulaciones-->
+            <VBox class="sapUiSmallMargin">
+                <Title text="Resumen Financiero General de simulaciones" titleStyle="H4" />
+                <HBox justifyContent="SpaceBetween">
+                <Label text="Número de simulación:" />
+                <Text text="{simulationSummaryModel>/totalSimulations}" />
+                </HBox >
+                <HBox justifyContent="SpaceBetween">
+                <Label text="Saldo inicial general:" />
+                <ObjectNumber number="{simulationSummaryModel>/generalInitialBalance}" unit="USD" />
+                </HBox>
+                <HBox justifyContent="SpaceBetween">
+                <Label text="Total unidades compradas:" />
+                <ObjectNumber number="{simulationSummaryModel>/totalBoughtUnits}" />
+                </HBox>
+                <HBox justifyContent="SpaceBetween">
+                <Label text="Total unidades vendidas:" />
+                <ObjectNumber number="{simulationSummaryModel>/totalSoldUnits}" />
+                </HBox>
+                <HBox justifyContent="SpaceBetween">
+                <Label text="Saldo final acumulado:" />
+                <ObjectNumber number="{simulationSummaryModel>/accumulatedFinalBalance}" unit="USD" />
+                </HBox>
+                <HBox justifyContent="SpaceBetween">
+                <Label text="Ganancia total acumulada:" />
+                <ObjectNumber number="{simulationSummaryModel>/accumulatedProfit}" unit="USD" />
+                </HBox>
+                <HBox justifyContent="SpaceBetween">
+                <Label text="Rendimiento acumulado (%):" />
+                <ObjectNumber number="{simulationSummaryModel>/accumulatedPercentageReturn}" unit="%" />
                 </HBox>
             </VBox>
 

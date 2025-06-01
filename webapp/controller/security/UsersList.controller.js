@@ -36,42 +36,7 @@ sap.ui.define([
             // Carga los usuarios
             this.loadUsers();
             this.loadRoles();
-            // this.loadCompanies();
-
-            const oView = this.getView();
-
-            // Modelo de compañías
-            const companies = [
-                { COMPANYID: "COCA", NAME: "Coca Cola" },
-                { COMPANYID: "MSFT", NAME: "Microsoft" },
-                { COMPANYID: "STBK", NAME: "Starbucks" },
-                { COMPANYID: "AAPL", NAME: "Apple" },
-            ];
-            const companyModel = new sap.ui.model.json.JSONModel({ companies });
-            oView.setModel(companyModel, "companyModel");
-
-            // Modelo completo de CEDIS
-            this._allCedis = [
-                { CEDI_ID: "COCATEPIC", NAME: "Coca Cola Tepic", COMPANYID: "COCA" },
-                { CEDI_ID: "COCACHIH", NAME: "Coca Cola Chihuahua", COMPANYID: "COCA" },
-                { CEDI_ID: "MSFTRDC", NAME: "Microsoft Redmond", COMPANYID: "MSFT" },
-                { CEDI_ID: "STBKMEX", NAME: "Starbucks CDMX", COMPANYID: "STBK" },
-                { CEDI_ID: "AAPLCA", NAME: "Apple Cupertino", COMPANYID: "AAPL" }
-            ];
-            oView.setModel(new sap.ui.model.json.JSONModel({ cedis: [] }), "cediModel");
-
-            // Modelo completo de departamentos
-            this._allDeptos = [
-                { DEPT_ID: "ALM", NAME: "Almacén", CEDI_ID: "COCATEPIC" },
-                { DEPT_ID: "VENT", NAME: "Ventas", CEDI_ID: "COCATEPIC" },
-                { DEPT_ID: "MKT", NAME: "Marketing", CEDI_ID: "COCACHIH" },
-                { DEPT_ID: "RH", NAME: "Recursos Humanos", CEDI_ID: "MSFTRDC" },
-                { DEPT_ID: "TI", NAME: "TI", CEDI_ID: "MSFTRDC" },
-                { DEPT_ID: "SOP", NAME: "Soporte", CEDI_ID: "STBKMEX" },
-                { DEPT_ID: "LOG", NAME: "Logística", CEDI_ID: "AAPLCA" }
-            ];
-            oView.setModel(new sap.ui.model.json.JSONModel({ deptos: [] }), "deptoModel");
-
+            this.loadCompanies();
         },
 
         /**
@@ -122,63 +87,78 @@ sap.ui.define([
                 });
         },
 
-        // onCompanySelected: function(oEvent){
-        //     var oComboBox = oEvent.getSource();
-        //     var sSelectedKey = oComboBox.getSelectedKey();
-        //     var oView = this.getView();
+        onCompanySelected: function(oEvent){
+            var oComboBox = oEvent.getSource();
+            var sSelectedKey = oComboBox.getSelectedKey();
+            var oView = this.getView();
 
-        //     if(sSelectedKey){
-        //         this.loadDeptos(sSelectedKey);
-        //     } else {
-        //         // Si se borra la selección, limpiamos el modelo de departamentos
-        //         var oEmptyModel = new JSONModel({ cedis: [] });
-        //         oView.setModel(oEmptyModel, "cedisModel");
-        //     }
-        // },
+            var valuepa = "IdCompanies-" + sSelectedKey;
 
+            console.log("Valuepa: ", valuepa);
+
+            if(sSelectedKey){
+                this.loadCedis(valuepa);
+            } else {
+                // Si se borra la selección, limpiamos el modelo de departamentos
+                var oEmptyModel = new JSONModel({ cedis: [] });
+                oView.setModel(oEmptyModel, "cedisModel");
+            }
+        },
         
 
-        // loadDeptos: function(companiId){
-        //     var oView = this.getView();
-        //     var oCedisModel = new JSONModel();
+        loadCedis: function(valuepa){
+            var oView = this.getView();
+            var oCedisModel = new JSONModel();
 
-        //     return fetch("env.json")
-        //         .then(res => res.json())
-        //         .then(env => fetch(env.API_VALUES_URL_BASE + "getallvalues?LABELID=IdCedis&COMPANYID=" + companiId))
-        //         .then(res => res.json())
-        //         .then(data => {
-        //             oCedisModel.setData({ cedis: data.value });
-        //             oView.setModel(oCedisModel, "cedisModel");
-        //         })
-        //         .catch(err => {
-        //             MessageToast.show("Error al cargar departamentos: " + err.message);
-        //         });
-        // },
-
-        onCompanySelected: function (oEvent) {
-            const selectedCompanyId = oEvent.getSource().getSelectedKey();
-
-            // Filtrar CEDIS por compañía
-            const filteredCedis = this._allCedis.filter(c => c.COMPANYID === selectedCompanyId);
-            this.getView().getModel("cediModel").setProperty("/cedis", filteredCedis);
-
-            // Limpiar deptos si cambias de compañía
-            this.getView().getModel("deptoModel").setProperty("/deptos", []);
+            return fetch("env.json")
+                .then(res => res.json())
+                .then(env => fetch(env.API_VALUES_URL_BASE + "getallvalues?LABELID=IdCedis&VALUEPAID=" + valuepa))
+                .then(res => res.json())
+                .then(data => {
+                    oCedisModel.setData({ cedis: data.value });
+                    oView.setModel(oCedisModel, "cedisModel");
+                })
+                .catch(err => {
+                    MessageToast.show("Error al cargar sucursales: " + err.message);
+                });
         },
 
+        onCediSelected: function(oEvent){
+            var oComboBox = oEvent.getSource();
+            var sSelectedKey = oComboBox.getSelectedKey();
+            var oView = this.getView();
+            
+            var valuepa = "IdCedis-" + sSelectedKey;
 
-        onCediSelected: function (oEvent) {
-        const selectedCediId = oEvent.getSource().getSelectedKey();
+            console.log("Valuepa: ", valuepa);
 
-        // Filtrar departamentos por CEDI
-        const filteredDeptos = this._allDeptos.filter(d => d.CEDI_ID === selectedCediId);
-        this.getView().getModel("deptoModel").setProperty("/deptos", filteredDeptos);
+            if(sSelectedKey){
+                this.loadDeptos(valuepa);
+            } else {
+                // Si se borra la selección, limpiamos el modelo de departamentos
+                var oEmptyModel = new JSONModel({ deptos: [] });
+                oView.setModel(oEmptyModel, "deptosModel");
+            }
         },
 
+        loadDeptos: function(valuepa){
+            var oView = this.getView();
+            var oDeptosModel = new JSONModel();
 
+            console.log("Valor padre: ",valuepa);
 
-
-
+            return fetch("env.json")
+                .then(res => res.json())
+                .then(env => fetch(env.API_VALUES_URL_BASE + "getallvalues?LABELID=IdDeptos&VALUEPAID=" + valuepa))
+                .then(res => res.json())
+                .then(data => {
+                    oDeptosModel.setData({ deptos: data.value });
+                    oView.setModel(oDeptosModel, "deptosModel");
+                })
+                .catch(err => {
+                    MessageToast.show("Error al cargar departamentos: " + err.message);
+                });
+        },
 
         /**
          * Funcion para cargar la lista de roles y poderlos visualizar en el combobox
@@ -441,8 +421,12 @@ sap.ui.define([
             }
         },
 
-        setUpdateUserDialogData: function(UserData) {
+        setUpdateUserDialogData: async function(UserData) {
             var oView = this.getView();
+            const EmailData = UserData.EMAIL.split("@");
+            const parteAntesDelArroba = EmailData[0];
+            const parteDespuesDelArroba = EmailData[1];
+
             oView.byId("inputEditUserId").setValue(UserData.USERID || "");
             oView.byId("inputEditUserPassword").setValue(UserData.PASSWORD || "");
             oView.byId("inputEditUserAlias").setValue(UserData.ALIAS || "");
@@ -456,34 +440,53 @@ sap.ui.define([
             oView.byId("inputEditRegionUser").setValue(UserData.REGION || "");
             oView.byId("inputEditStateUser").setValue(UserData.STATE || "");
             oView.byId("inputEditCountryUser").setValue(UserData.COUNTRY || "");
-            oView.byId("inputEditUserEmail").setValue(UserData.EMAIL || "");
+            oView.byId("inputEditEmailUser").setValue(parteAntesDelArroba || "");
+            oView.byId("inputEditEmailDomain").setValue(parteDespuesDelArroba || "");
             oView.byId("inputEditUserAvatar").setValue(UserData.AVATAR || "");
             // Cargar compañías y seleccionar la correcta
             // Primero cargamos las compañías
-            var oComboCompanies = oView.byId("comboBoxEditCompanies");
-            var aCompanies = oComboCompanies.getItems();
-            var selectedCompanyId = null;
-            for (var i = 0; i < aCompanies.length; i++) {
+            const oComboCompanies = oView.byId("comboBoxEditCompanies");
+            const aCompanies = oComboCompanies.getItems();
+            let selectedCompanyId = null;
+
+            for (let i = 0; i < aCompanies.length; i++) {
                 if (aCompanies[i].getText() === UserData.COMPANYNAME) {
                     oComboCompanies.setSelectedItem(aCompanies[i]);
-                    selectedCompanyId = aCompanies[i].getKey(); // GUARDAMOS EL ID DE LA COMPAÑIA
+                    selectedCompanyId = aCompanies[i].getKey();
                     break;
                 }
             }
-            // Aquí llamamos a loadDeptos con el ID seleccionado del combobox de compañías
+
+            // Aquí llamamos a loadCedis con el ID seleccionado del combobox de compañías
             if (selectedCompanyId) {
-                this.loadDeptos(selectedCompanyId).then(() => {
-                    // Ahora que ya cargaron los departamentos, seleccionamos el correcto que tiene guardado este usuario
-                    var oComboCedis = oView.byId("comboBoxEditCedis");
-                    var aCedis = oComboCedis.getItems();
-                    for (var j = 0; j < aCedis.length; j++) {
-                        if (aCedis[j].getText() === UserData.DEPARTMENT) {
-                            oComboCedis.setSelectedItem(aCedis[j]);
+                await this.loadCedis("IdCompanies-" + selectedCompanyId);
+                const oComboCedis = oView.byId("comboBoxEditCedis");
+                const aCedis = oComboCedis.getItems();
+
+                for (let j = 0; j < aCedis.length; j++) {
+                    if (aCedis[j].getKey() === UserData.CEDIID) {
+                        oComboCedis.setSelectedItem(aCedis[j]);
+                        this.selectedCedi = aCedis[j].getKey();
+                        break;
+                    }
+                }
+
+                if (this.selectedCedi) {
+                    await this.loadDeptos("IdCedis-" + this.selectedCedi);
+                    const oComboDeptos = oView.byId("comboBoxEditDeptos");
+                    const aDeptos = oComboDeptos.getItems();
+
+                    for (let k = 0; k < aDeptos.length; k++) {
+                        if (aDeptos[k].getText() === UserData.DEPARTMENT) {
+                            oComboDeptos.setSelectedItem(aDeptos[k]);
                             break;
                         }
                     }
-                });
+                }
             }
+
+
+
             oView.byId("inputEditUserPhoneNumber").setValue(UserData.PHONENUMBER || "");
             oView.byId("inputEditUserFunction").setValue(UserData.FUNCTION || "");
             if (UserData.BIRTHDAYDATE) {
@@ -534,12 +537,14 @@ sap.ui.define([
             var EmplId = oView.byId("inputEditEmployeeId").getValue();
             var Ext = oView.byId("inputEditExtension").getValue();
             var Phone = oView.byId("inputEditUserPhoneNumber").getValue();
-            var Email = oView.byId("inputEditUserEmail").getValue();
+            var EmailUser = oView.byId("inputEditEmailUser").getValue();
+            var EmailDomain = oView.byId("inputEditEmailDomain").getValue();
+            var Email = EmailUser + "@" + EmailDomain;
             var Birthday = oView.byId("inputEditUserBirthdayDate").getDateValue();
             var formattedBirthday = Birthday ? Birthday.toISOString().split("T")[0] : null;
             var Avatar = oView.byId("inputEditUserAvatar").getValue();
             var Company = oView.byId("comboBoxEditCompanies").getSelectedItem().getText();
-            var Department = oView.byId("comboBoxEditCedis").getSelectedItem().getText();
+            var Department = oView.byId("comboBoxEditDeptos").getSelectedItem().getText();
             var CediId = oView.byId("comboBoxEditCedis").getSelectedKey();
             var Function = oView.byId("inputEditUserFunction").getValue();
 
@@ -550,15 +555,6 @@ sap.ui.define([
             var State = oView.byId("inputEditStateUser").getValue();
             var Country = oView.byId("inputEditCountryUser").getValue();
 
-            // Validar email y teléfono
-            if (!this.isValidEmail(Email)) {
-                MessageToast.show("Email no válido");
-                return;
-            }
-            if (!this.isValidPhoneNumber(Phone)) {
-                MessageToast.show("Número de teléfono no válido");
-                return;
-            }
             var SelectedRoles = oView.byId("selectedEditRolesVBox").getItems().map(oItem => ({
                 ROLEID: oItem.data("roleId"),
                 ROLEIDSAP: ""
@@ -969,7 +965,7 @@ sap.ui.define([
             dateInput.setDateValue(null);
 
             // Limpiar ComboBoxes (deseleccionar items)
-            ["comboBoxCompanies", "comboBoxCedis","comvoBoxDeptos","comboBoxRoles"].forEach(id => {
+            ["comboBoxCompanies", "comboBoxCedis","comboBoxDeptos","comboBoxRoles"].forEach(id => {
                 var combo = oView.byId(id);
                 if (combo) combo.setSelectedItem(null);
             });

@@ -20,14 +20,12 @@
                     width="300px"
                     showSearchButton="true"/>
                 <ToolbarSpacer/>
-                <Label text="FILTROS:"/>
                 <Button
                     icon="sap-icon://date-time"
                     text="Entre Fechas"
                     type="Transparent"
                     press=".onToggleRangeDateFilter"/>
-                <ToolbarSeparator/>
-                <Button
+                <!-- <Button
                     icon="sap-icon://money-bills"
                     text="Rango de inversion"
                     type="Transparent"
@@ -37,7 +35,7 @@
                     icon="sap-icon://trend-up"
                     text="Rango de rentabilidad"
                     type="Transparent"
-                    press=".onToggleRangeRentFilter"/>
+                    press=".onToggleRangeRentFilter"/> -->
             </OverflowToolbar>
 
             <!-- Panel de Filtro por Fecha -->  
@@ -59,7 +57,7 @@
             </VBox>
 
                         <!-- Panel de Filtro por Rango de inv -->  
-            <VBox id="rangeInversionFilter" visible="false" class="sapUiSmallMarginBottom">
+            <!-- <VBox id="rangeInversionFilter" visible="false" class="sapUiSmallMarginBottom">
                 <f:SimpleForm
                     editable="true"
                     layout="ResponsiveGridLayout"
@@ -81,11 +79,11 @@
                         change=".onFilterInvChange"/>
                     
                 </f:SimpleForm>
-            </VBox>
+            </VBox> -->
 
 
             <!-- Filtro por rentabilidad -->
-            <VBox id="rangeRentFilter" visible="false" class="sapUiSmallMarginBottom">
+            <!-- <VBox id="rangeRentFilter" visible="false" class="sapUiSmallMarginBottom">
                 <f:SimpleForm
                     editable="true"
                     layout="ResponsiveGridLayout"
@@ -105,10 +103,10 @@
                         enableTickmarks="true"
                         change=".onFilterRentChange"/>
                 </f:SimpleForm>
-            </VBox>
+            </VBox> -->
 
 
-            <OverflowToolbar>
+            <!-- <OverflowToolbar>
             <Title text="Estrategias Encontradas: {historyModel>/filteredCount}"/>
             <ToolbarSpacer/>
             <ToggleButton
@@ -123,7 +121,7 @@
                 visible="{historyModel>/isDeleteMode}"
                 press=".onDeleteSelected"
                 enabled="{= ${historyModel>/selectedCount} > 0 }"/>
-        </OverflowToolbar>
+        </OverflowToolbar> -->
 
 
             <!-- Tabla -->
